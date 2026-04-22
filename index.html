@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "error-container": "#93000a",
+            "error": "#ffb4ab",
+            "surface-bright": "#3a3939",
+            "inverse-primary": "#004ced",
+            "primary-container": "#0052ff",
+            "tertiary": "#ffb4a1",
+            "on-secondary-fixed": "#002113",
+            "outline": "#8d90a2",
+            "surface": "#131313",
+            "outline-variant": "#434656",
+            "surface-container-low": "#1c1b1b",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#ffb4a1",
+            "surface-container-highest": "#353534",
+            "on-primary": "#002682",
+            "surface-container": "#201f1f",
+            "secondary-container": "#00a572",
+            "inverse-on-surface": "#313030",
+            "on-tertiary": "#611300",
+            "surface-variant": "#353534",
+            "on-secondary-fixed-variant": "#005236",
+            "on-surface": "#e5e2e1",
+            "surface-container-high": "#2a2a2a",
+            "surface-tint": "#b7c4ff",
+            "primary-fixed-dim": "#b7c4ff",
+            "on-background": "#e5e2e1",
+            "on-tertiary-fixed": "#3c0800",
+            "tertiary-container": "#bf3003",
+            "secondary-fixed-dim": "#4edea3",
+            "on-primary-fixed-variant": "#0038b6",
+            "surface-container-lowest": "#0e0e0e",
+            "secondary-fixed": "#6ffbbe",
+            "secondary": "#4edea3",
+            "background": "#131313",
+            "on-secondary": "#003824",
+            "primary": "#b7c4ff",
+            "on-tertiary-container": "#ffddd5",
+            "on-primary-fixed": "#001452",
+            "on-tertiary-fixed-variant": "#891e00",
+            "on-primary-container": "#dfe3ff",
+            "on-surface-variant": "#c3c5d9",
+            "inverse-surface": "#e5e2e1",
+            "on-error": "#690005",
+            "primary-fixed": "#dde1ff",
+            "on-secondary-container": "#00311f",
+            "surface-dim": "#131313",
+            "tertiary-fixed": "#ffdbd2"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "margin-mobile": "20px",
+            "stack-lg": "24px",
+            "gutter": "32px",
+            "container-max": "1280px",
+            "section-gap": "128px",
+            "stack-md": "16px",
+            "margin-desktop": "64px",
+            "stack-sm": "8px"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "display-xl": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["20px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+            "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+            "display-xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+            "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+            "headline-md": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="font-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800">
+<div class="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center h-16">
+<a class="text-lg font-bold tracking-tighter text-slate-900 dark:text-white" href="#">UX Lead Portfolio</a>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-sans tracking-tight text-sm font-medium uppercase text-blue-600 dark:text-blue-500 border-b-2 border-blue-600 pb-1" href="#">Work</a>
+<a class="font-sans tracking-tight text-sm font-medium uppercase text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">About</a>
+<a class="font-sans tracking-tight text-sm font-medium uppercase text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Contact</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:opacity-70 transition-opacity active:scale-[0.98] transition-transform duration-200">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" data-icon="dark_mode">dark_mode</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="pt-16">
+<!-- Case Study Hero -->
+<header class="w-full bg-surface-container-lowest">
+<div class="relative w-full aspect-[21/9] overflow-hidden">
+<img alt="Project Hero" class="w-full h-full object-cover" data-alt="Cinematic wide shot of a futuristic minimalist mobile interface displayed on a sleek glass tablet in a dark, moody architectural space with neon blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6O6nqCJe3pYEGT3PUKG_y_l_HvalTtmYU-NRBMRj-Q_jpxNP42lJNPRu2-JE-Q7lMTlVvoZpLIEZ008ioMd3FYP3k-mXLF3SLBx7F5XEXeMN7Dd2tVHlwI_VsYlonBhVIsnHOf0N_N5rq0gMXEzKU6Ji4QvCTWTMzjNO-LCqW0Td5QZzchajwAYyb9nXF5azmLkGD1ExEoIBqLc2K3WjNNCZ4apCGYVvZF_LqQ44R-CprU_cfGhztFvBrQvz6gr2_LPzsMESp91Y"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full px-margin-mobile md:px-margin-desktop py-stack-lg">
+<div class="max-w-7xl mx-auto">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-[0.2em] mb-4 block">Fintech Evolution 2024</span>
+<h1 class="font-display-xl text-display-xl text-white mb-6 max-w-4xl">Redefining Digital Wealth Management</h1>
+<div class="flex flex-wrap gap-8 items-center border-t border-outline-variant pt-8">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Role</p>
+<p class="font-body-md text-body-md text-white">Lead UX Designer</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Timeline</p>
+<p class="font-body-md text-body-md text-white">6 Months</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Platform</p>
+<p class="font-body-md text-body-md text-white">iOS &amp; Web</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Sections Wrapper -->
+<div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop">
+<!-- 1. Overview -->
+<section class="mt-section-gap grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-4">
+<h2 class="font-headline-md text-headline-md text-primary sticky top-24">Overview</h2>
+</div>
+<div class="md:col-span-8">
+<div class="max-w-[800px]">
+<p class="font-body-lg text-body-lg text-on-surface mb-stack-lg">
+              The project aimed to transform a fragmented traditional banking experience into a unified, intelligent wealth management ecosystem. The primary challenge was balancing complex data visualization with an effortless user journey for both novice and experienced investors.
+            </p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-stack-lg mt-12">
+<div class="p-6 bg-surface-container border border-outline-variant rounded">
+<h4 class="font-label-sm text-label-sm text-secondary uppercase mb-2">The Challenge</h4>
+<p class="text-on-surface-variant">Users felt overwhelmed by legacy interfaces, resulting in a 40% drop-off rate during the portfolio rebalancing process.</p>
+</div>
+<div class="p-6 bg-surface-container border border-outline-variant rounded">
+<h4 class="font-label-sm text-label-sm text-primary uppercase mb-2">The Objective</h4>
+<p class="text-on-surface-variant">Create a "zero-friction" interface that leverages AI to provide actionable financial insights in under 3 seconds.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Artifact Showcase 1 -->
+<section class="mt-stack-lg">
+<div class="rounded-xl overflow-hidden bg-surface-container-high border border-outline-variant aspect-video flex items-center justify-center p-12">
+<img alt="Initial Sketches" class="w-full h-full object-contain rounded-lg shadow-2xl" data-alt="High-fidelity 3D renders of a mobile app's dashboard showing colorful investment charts, clean typography, and a glassmorphism card style over a dark background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBb3IfutrorVp9ncwyg_QwfsUmEeDRY7IFpVUWKA2GqP6PcgoFBK1K33izGe0WiLw9GNnhtlw1LwZy46vUYbc12bn-kEk-g8-5mNpumjeIhj62N13U5sDeK8LiAAq43YmpPJSJAC8moODlLwQwT8L2NY7_d63hXn9jRzL1ee1yD9oNQuzT2GgpZNS4lpaL4-cC2Oan2HKxogD4xZZ1xNeXsoiosy3tX6HJw6Ytz-dxvrNPC_CN5UfArmOYDCZuqEVzN53hHUw-yFHE"/>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant text-center mt-4 uppercase">Figure 1.1: Early conceptual wireframes focusing on information hierarchy</p>
+</section>
+<!-- 2. The Process -->
+<section class="mt-section-gap grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-4">
+<h2 class="font-headline-md text-headline-md text-primary sticky top-24">The Process</h2>
+</div>
+<div class="md:col-span-8">
+<div class="max-w-[800px]">
+<ol class="space-y-12">
+<li class="relative pl-12 border-l border-primary-container">
+<span class="absolute -left-3 top-0 w-6 h-6 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center font-bold text-xs">1</span>
+<h3 class="font-headline-sm text-xl font-bold text-white mb-4">Deep Research &amp; Discovery</h3>
+<p class="text-on-surface-variant mb-6">We interviewed 24 active investors across three demographics. Key insight: users didn't want more data; they wanted more clarity on what that data meant for their future.</p>
+</li>
+<li class="relative pl-12 border-l border-outline-variant">
+<span class="absolute -left-3 top-0 w-6 h-6 bg-surface-container-highest text-on-surface rounded-full flex items-center justify-center font-bold text-xs">2</span>
+<h3 class="font-headline-sm text-xl font-bold text-white mb-4">Iterative Wireframing</h3>
+<p class="text-on-surface-variant mb-6">Low-fidelity prototypes were tested weekly. We focused on the 'Golden Path' of identifying market trends and executing trades with a single gesture.</p>
+</li>
+<li class="relative pl-12 border-l border-outline-variant">
+<span class="absolute -left-3 top-0 w-6 h-6 bg-surface-container-highest text-on-surface rounded-full flex items-center justify-center font-bold text-xs">3</span>
+<h3 class="font-headline-sm text-xl font-bold text-white mb-4">Usability Testing</h3>
+<p class="text-on-surface-variant mb-6">Validated high-fidelity prototypes with 50+ users. We reduced the task completion time for 'Portfolio Health Check' from 4.5 minutes to 45 seconds.</p>
+</li>
+</ol>
+</div>
+</div>
+</section>
+<!-- Artifact Showcase 2: Bento Grid -->
+<section class="mt-section-gap grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="md:col-span-2 aspect-video bg-surface-container rounded-xl border border-outline-variant overflow-hidden group">
+<img alt="UI Detail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Macro close-up of a mobile app screen showing a sleek dark-themed dark interface with vibrant green and red stock market candles and clean labels." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7fxzk16ZgzgUTcXevGQ2HO5t2eH1QTnrj6dmNsiYkLQ8OGeTb1SlI56dX0zSMBRWhm8DmgGw5yetYKz9r6Bp78QMM4AhilsQehXHX8-3Cz1nl1A9oRfaPqO8dTZnGXRLJ9f-8_v0VVozIRD-NLm9KlFDidcaTp2Y8Zehy4vuS85fDc2x_dgVQSWYUNTw37M1tLkzRYQfThWLS3iNZ2Bn-mwS1smvS7ShadyXcEjiEq7BgUyIdONccnhbFzvL4yVn8amUL202BWqg"/>
+</div>
+<div class="aspect-square bg-surface-container rounded-xl border border-outline-variant overflow-hidden group">
+<img alt="UI Detail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Close up of a notification card on a smartphone screen, featuring elegant typography and a soft blue glow against a deep black background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9c0NRzYOUZBApARenZOnDJfWZoL4zuMT2d9O_CLZJ3yak3VLMlLX2oSn-MYfG4q84Cu7gtykzfYpLXNOCS5YFBTfdC1lQ8HrN4tvwVwJNB393vEsFfnUvZIm49LwS0PkL5onX-4dme8JJlwFAKj_erQk9mhD5l7Rw1usWIx_uEkvbGuesUZ8UV_5AcoZi0MpsOOXRSgxuBAMmUHKzRkXxUW5mm0Cdm-Udpd2pQGFhbHhymdiZNLhywzycvciNx9oJpqXHYydP0TM"/>
+</div>
+<div class="aspect-square bg-surface-container rounded-xl border border-outline-variant overflow-hidden group">
+<img alt="UI Detail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Design system components including buttons, toggles, and sliders in a minimalist corporate style with electric blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3uYg-9VAQ3lP6boEkxp7xpzl5mhhnDOjAzsjvkjJkM6xIyp9hOzwACqThC2jHPpNeJU6B7EARUZr7FDbu9AnLM1o9WUUdIqsu47USzIo1lMoKtJOLHveaefH_VS12L_hOrh3HhSQFme-P_0ufcjOQXSWbE0C920pN08El07RctMBOKJmHvEBFZDKivWl7Y5uILcYUIgipFLofkXulzcab7Cz5Q4f0CJyzPuIrMc-RnvUqR3WvlIitsiB_QUYZ5idUcDjmbtDEgpY"/>
+</div>
+<div class="md:col-span-2 aspect-[16/6] bg-surface-container rounded-xl border border-outline-variant overflow-hidden group">
+<img alt="UI Detail" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A split screen view of a web dashboard and mobile app side-by-side, demonstrating consistent cross-platform design language and responsiveness." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9Ywv5B2Is6Ui3Tf6Te5CyvA72WBjVfljvyV6FOZ7CjusStMuRlwvelokGhLA3Gcnl69viHTSmQEILjdb_Jwee8DgcZlCqlT283ElVyAHFycwV0OSXR8LdUIDWTQ-7HlGj_fuZhQ6z7torcaBbbXxCKGoxRMylkk8YbdKgvlFbgLO9YssfkJ5c5Ljz8zhW5Za_skeyxnQHdUGJkhvcKOooQ6x0LKszTnGcKcXZcXEX7X3Sk6BlGodzs3eqVV07jCmW7t40OoPsRhE"/>
+</div>
+</section>
+<!-- 3. The Solution -->
+<section class="mt-section-gap grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-4">
+<h2 class="font-headline-md text-headline-md text-primary sticky top-24">The Solution</h2>
+</div>
+<div class="md:col-span-8">
+<div class="max-w-[800px]">
+<blockquote class="border-l-4 border-primary pl-8 py-2 mb-12">
+<p class="font-body-lg text-body-lg italic text-primary">"We didn't just redesign the app; we redesigned the user's relationship with their own financial future through predictive transparency."</p>
+</blockquote>
+<p class="font-body-md text-body-md text-on-surface mb-8">
+              The final product introduced a <strong>Contextual Command Center</strong>. Instead of navigating through deep menus, the UI surface adapts based on time of day, market volatility, and user habits.
+            </p>
+<ul class="space-y-6">
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant"><strong>Adaptive Glassmorphism:</strong> Used depth to prioritize high-risk assets visually.</span>
+</li>
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant"><strong>Natural Language Processing:</strong> Replaced complex filter menus with a simple search bar that understands intent.</span>
+</li>
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant"><strong>Proactive Alerts:</strong> AI-driven notifications that suggest rebalancing strategies before market shifts occur.</span>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- 4. Impact -->
+<section class="mt-section-gap mb-24">
+<div class="bg-primary-container/10 border border-primary-container/30 rounded-full p-12 md:p-20 text-center">
+<h2 class="font-label-sm text-label-sm text-primary uppercase tracking-[0.3em] mb-12">The Impact</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div class="flex flex-col items-center">
+<span class="font-display-xl text-[64px] text-white leading-none mb-2">+15%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Conversion Rate</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-display-xl text-[64px] text-white leading-none mb-2">82%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">User Retention</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-display-xl text-[64px] text-white leading-none mb-2">-70%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Support Tickets</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-24 bg-slate-50 dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800">
+<div class="max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
+<p class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500">© 2024 UX Lead Portfolio. Built with precision.</p>
+<div class="flex items-center gap-8">
+<a class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors hover:underline underline-offset-4" href="#">LinkedIn</a>
+<a class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors hover:underline underline-offset-4" href="#">Email</a>
+<a class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors hover:underline underline-offset-4" href="#">Resume</a>
+</div>
+</div>
+</footer>
+</body></html>
