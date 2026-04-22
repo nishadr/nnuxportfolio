@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UX Lead Portfolio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#3a3939",
+                        "inverse-primary": "#004ced",
+                        "primary-container": "#0052ff",
+                        "tertiary": "#ffb4a1",
+                        "on-secondary-fixed": "#002113",
+                        "outline": "#8d90a2",
+                        "surface": "#131313",
+                        "outline-variant": "#434656",
+                        "surface-container-low": "#1c1b1b",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb4a1",
+                        "surface-container-highest": "#353534",
+                        "on-primary": "#002682",
+                        "surface-container": "#201f1f",
+                        "secondary-container": "#00a572",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#611300",
+                        "surface-variant": "#353534",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-surface": "#e5e2e1",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-tint": "#b7c4ff",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#3c0800",
+                        "tertiary-container": "#bf3003",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary-fixed-variant": "#0038b6",
+                        "surface-container-lowest": "#0e0e0e",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#4edea3",
+                        "background": "#131313",
+                        "on-secondary": "#003824",
+                        "primary": "#b7c4ff",
+                        "on-tertiary-container": "#ffddd5",
+                        "on-primary-fixed": "#001452",
+                        "on-tertiary-fixed-variant": "#891e00",
+                        "on-primary-container": "#dfe3ff",
+                        "on-surface-variant": "#c3c5d9",
+                        "inverse-surface": "#e5e2e1",
+                        "on-error": "#690005",
+                        "primary-fixed": "#dde1ff",
+                        "on-secondary-container": "#00311f",
+                        "surface-dim": "#131313",
+                        "tertiary-fixed": "#ffdbd2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "stack-lg": "24px",
+                        "gutter": "32px",
+                        "container-max": "1280px",
+                        "section-gap": "128px",
+                        "stack-md": "16px",
+                        "margin-desktop": "64px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-xl": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["20px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                        "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            scroll-behavior: smooth;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800">
+<div class="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center h-16">
+<div class="text-lg font-bold tracking-tighter text-slate-900 dark:text-white">
+                UX Lead Portfolio
+            </div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-sans tracking-tight text-sm font-medium uppercase text-blue-600 dark:text-blue-500 border-b-2 border-blue-600 pb-1" href="#work">Work</a>
+<a class="font-sans tracking-tight text-sm font-medium uppercase text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#about">About</a>
+<a class="font-sans tracking-tight text-sm font-medium uppercase text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#contact">Contact</a>
+<button class="text-slate-500 dark:text-zinc-400 hover:opacity-70 transition-opacity active:scale-[0.98]">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+</div>
+<div class="md:hidden flex items-center">
+<span class="material-symbols-outlined text-on-surface" data-icon="menu">menu</span>
+</div>
+</div>
+</nav>
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-6 md:px-12 pt-24 pb-32 flex flex-col md:flex-row items-center gap-16">
+<div class="flex-1 space-y-stack-lg">
+<h1 class="font-display-xl text-display-xl text-on-background">
+                    UX Lead: <span class="text-primary">Personal branding</span>, result oriented, business focussed.
+                </h1>
+<p class="text-on-surface-variant font-body-lg text-body-lg max-w-xl">
+                    Bridging the gap between user needs and business goals through systematic design thinking and technical excellence.
+                </p>
+<div class="pt-8">
+<a class="inline-flex items-center gap-2 px-8 py-4 bg-primary-container text-on-primary-container font-medium hover:opacity-90 transition-opacity rounded-DEFAULT" href="#work">
+                        View Selected Work
+                        <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="flex-1 w-full max-w-md md:max-w-none">
+<div class="aspect-[4/5] overflow-hidden rounded-lg grayscale hover:grayscale-0 transition-all duration-700 border border-outline-variant">
+<img alt="Professional portrait" class="w-full h-full object-cover" data-alt="Close-up professional portrait of a confident man in a dark minimalist studio setting with soft directional lighting and deep shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjgXhwstkzP8AFAMc21PGWqMYPaErSWRBqXK9LIYbKDnn84hWuaRutUdQeWbGkcpnSuHiQ8wXn4Wpco2SgKZWds3XDdbsGFsPGBIWFEFtnrD8nddOXONBiJoN2bEXwdRza1bj5DmdYSwanbqCSDjtdZZnDJhgW-rIvk_LzQqi6Qzby_YsIB_Xjhv_iAc9RJ119yvSqzEHo_jsIoEE6t9B3lZg13BFBIpgRlMfexutN27-AkmbrP29tiz62WLOUPcsy9MzFtVZRJ1Q"/>
+</div>
+</div>
+</section>
+<!-- Case Studies Section -->
+<section class="bg-surface-container-lowest py-section-gap" id="work">
+<div class="max-w-7xl mx-auto px-6 md:px-12">
+<div class="mb-16 border-l-4 border-primary pl-6">
+<h2 class="font-headline-lg text-headline-lg text-on-background uppercase tracking-tight">Selected Work</h2>
+<p class="text-on-surface-variant font-body-md text-body-md mt-2">A curated collection of impactful product transformations.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Feature Case Study (Span 8) -->
+<div class="md:col-span-8 group cursor-pointer">
+<div class="aspect-video overflow-hidden rounded-lg border border-outline-variant transition-colors group-hover:border-primary">
+<img alt="E-commerce Redesign" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Clean minimalist web interface showing sophisticated dashboard data visualization with soft blue and grey accent colors and modern typography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDTSKfsfr2Vy-kXMYPPwgvPw_My1_fj7Vkh-AmcoOWV9vwaI6T-bb7pjN-iBVCI_M-viCjtJWFuF3KbX6IarGo9FoKBkTE1ctK2AJkTfScEVAkpIvob2Q0TChCm-6mWHDuNu-Svmc1yvvI-f5cJGeK_VI27UQuSIik05Hwv2b124NkiQ1e0SiDZnW71VLHNdeLmo82j3rv4T3ZuYAUf59jXvVSDl66_WbyS5gHo3sjCGJc11UC3RoE0U-7UO_Ry5ekhrGxhnefZAg"/>
+</div>
+<div class="mt-stack-md">
+<span class="font-label-sm text-label-sm text-primary uppercase">E-commerce Redesign</span>
+<h3 class="font-headline-md text-headline-md text-on-background mt-2">Global Checkout Optimization</h3>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Reduced cart abandonment by 34% through a frictionless multi-step progression system.</p>
+</div>
+</div>
+<!-- Side Case Study (Span 4) -->
+<div class="md:col-span-4 group cursor-pointer">
+<div class="aspect-square overflow-hidden rounded-lg border border-outline-variant transition-colors group-hover:border-primary">
+<img alt="Fintech App" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Close up of a sleek mobile app interface displaying investment portfolio graphs with high contrast dark mode design and neon green accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg6EMcpJS9XPX604a_qj--_qGebZ7qXDq7pgExYdfHpAgw-9emPDakDf0tN5CJiTw5RGhEpglAmuFYJCpmC7YRB2dh5kVo692bPktYfx2kS-6rKMMiy1pfBqttx8NQGrrXQpIAGPCgHrhYa7MkfMjgN9P6BJWO8nszmFVvwfzQlW6SocPf9cecKqksxDrEeH9UVJFTl_Ps1TQuzD_SfaatFdcCOYt0VnfrhgYPbrAhyCBlpaYHIbylygQs2Uad3emz_AV90x8TyFY"/>
+</div>
+<div class="mt-stack-md">
+<span class="font-label-sm text-label-sm text-secondary uppercase">Fintech App</span>
+<h3 class="font-headline-md text-headline-md text-on-background mt-2">Wealth Management</h3>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Driving user engagement through intuitive data visualization and asset tracking.</p>
+</div>
+</div>
+<!-- Row 2: 3 Cards -->
+<div class="md:col-span-4 group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden rounded-lg border border-outline-variant transition-colors group-hover:border-primary">
+<img alt="Design System" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean grid of design system components including buttons, sliders and input fields in a neutral grey and white color palette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAb96FLFQAx6iGf3Is4dtWEFiBf49D-U4ODx3Aap8SZVwXXc9FNlEVWGlv5BJFJTUk5H5iJ_9_jLRhUGKTheJ2PLRCfsJSs9J4df6wefRPIVonn13wqBSbplsbj6iw0ydTKQx9b5HltidXdcLmSWkY7Qz3b-UGQsjLweqY23ooU9RoIYeo0_8RsHo8exJ47aR3D98lMsrVBMqzDHARPfDvd_385jT4CJ9o3wG5TQGp9ihNYriXvBVmpchfmXjNlHXtZDwtWMBuMps"/>
+</div>
+<div class="mt-stack-md">
+<span class="font-label-sm text-label-sm text-tertiary uppercase">Infrastructure</span>
+<h3 class="font-headline-md text-headline-md text-on-background mt-2">Component Library</h3>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Streamlining design-to-dev handoff for a team of 40+ engineers across 3 continents.</p>
+</div>
+</div>
+<div class="md:col-span-4 group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden rounded-lg border border-outline-variant transition-colors group-hover:border-primary">
+<img alt="Collaboration Platform" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Overhead view of a creative team collaborating around a large wooden table with laptops and sketches in a bright sunlit office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPVY23SHYbwnva4Q6Qk9vslvZybYQm6Y7BzkSJy9G0lD2h49P5xWJRSGBvdYYwVGIv70KNMQp1VzI2XmkO6b85PeJTZRb2c22uUD4QQJELoDjvCSvIg6g0X_EQndagqM4XCqHUK2y-ITLGHOl-ryPAQ7HfrzkJ7DDJS5R8GbxuD7kXjF_FsFDFY1jYJAw05JZ1JG99udabDGEoEO6JZ5dUpFFDQvCDdr4lpCcRUqYG_Xbe_rX3lRMDB9PXvmPCjlUJeYizcwomKoI"/>
+</div>
+<div class="mt-stack-md">
+<span class="font-label-sm text-label-sm text-primary uppercase">SaaS</span>
+<h3 class="font-headline-md text-headline-md text-on-background mt-2">Team Flow</h3>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Reimagining project management through the lens of deep work and focus intervals.</p>
+</div>
+</div>
+<div class="md:col-span-4 group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden rounded-lg border border-outline-variant transition-colors group-hover:border-primary">
+<img alt="Healthcare Portal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Medical professional using a tablet showing a clean health record interface with blue and white soft aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGZE_RF9kqrQpX4PVQw7OhLAaNlO6Wgs2ZV3Vrwrqk949WlCL4yn2JlUVgElWpNRpkXpEuXeEhjOvqNWENG37foQokkIZaFsUhPaVYk9-3yZr9clHF1iLzHkyYrFYPEVejdGa76l-nO5CBvNlYa8u98VRTM5Zrdhaw5hNDT-fLb_2Y-23TkkoZ7jLbcMo6VlBFdaBP-PHqbr2BrU5V0yyK3jfTTMu7Eagdk2CsiP_PKKS9Bvga9xIlhKN57iRAliaRn0U4ai12cng"/>
+</div>
+<div class="mt-stack-md">
+<span class="font-label-sm text-label-sm text-secondary uppercase">Healthcare</span>
+<h3 class="font-headline-md text-headline-md text-on-background mt-2">Patient Gateway</h3>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Improving access to tele-health services for elderly demographics with accessibility-first design.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- About & Contact Section -->
+<section class="py-section-gap border-t border-zinc-800" id="about">
+<div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-24 items-start">
+<div class="space-y-stack-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background uppercase tracking-tight">About Me</h2>
+<div class="space-y-6">
+<p class="font-body-lg text-body-lg text-on-surface">
+                            With over a decade of experience in product design, I lead teams to create digital experiences that are as commercially viable as they are user-centric. I believe in the power of precision, technical mastery, and editorial clarity.
+                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            My approach combines rigorous user research with a deep understanding of business logic, ensuring that every pixel serves a purpose. I've partnered with Fortune 500 companies and high-growth startups to scale their design maturity.
+                        </p>
+</div>
+</div>
+<div class="space-y-stack-lg" id="contact">
+<h2 class="font-headline-lg text-headline-lg text-on-background uppercase tracking-tight">Connect</h2>
+<div class="flex flex-col gap-8">
+<a class="group flex items-center justify-between border-b border-zinc-800 pb-4 hover:border-primary transition-colors" href="#">
+<span class="font-headline-md text-headline-md text-on-background">LinkedIn</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform" data-icon="arrow_outward">arrow_outward</span>
+</a>
+<a class="group flex items-center justify-between border-b border-zinc-800 pb-4 hover:border-primary transition-colors" href="#">
+<span class="font-headline-md text-headline-md text-on-background">Email</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform" data-icon="alternate_email">alternate_email</span>
+</a>
+<a class="group flex items-center justify-between border-b border-zinc-800 pb-4 hover:border-primary transition-colors" href="#">
+<span class="font-headline-md text-headline-md text-on-background">Resume</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform" data-icon="description">description</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-24 bg-slate-50 dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800">
+<div class="max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
+<p class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500 uppercase">
+                © 2024 UX Lead Portfolio. Built with precision.
+            </p>
+<div class="flex gap-8">
+<a class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors uppercase hover:underline underline-offset-4" href="#">LinkedIn</a>
+<a class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors uppercase hover:underline underline-offset-4" href="#">Email</a>
+<a class="font-sans text-xs tracking-wide text-slate-500 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-500 transition-colors uppercase hover:underline underline-offset-4" href="#">Resume</a>
+</div>
+</div>
+</footer>
+</body></html>
