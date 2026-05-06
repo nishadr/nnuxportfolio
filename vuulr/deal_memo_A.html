@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Vuulr — Offer & Deal Memo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar-blue:#1a6fc4;--sidebar-hover:rgba(255,255,255,0.12);--sidebar-active:rgba(255,255,255,0.18);
+  --white:#fff;--page-bg:#f4f7fb;--border:#dde3ed;--blue:#1a6fc4;--blue-dark:#155fa8;
+  --blue-bg:#e3f0fb;--blue-border:#bee3f8;--text-dark:#1a2332;--text-mid:#4a5568;--text-light:#8a96a8;
+  --nav-muted:rgba(255,255,255,0.45);--sidebar-expanded:230px;--sidebar-collapsed:58px;
+  --topbar-h:58px;--transition:0.22s ease;--danger:#e53e3e;
+  --success:#276749;--success-bg:#f0fff4;--success-border:#9ae6b4;
+  --warn:#b7791f;--warn-bg:#fffaf0;--warn-border:#fbd38d;
+  --r:6px;
+}
+body{font-family:'Inter',sans-serif;background:var(--page-bg);color:var(--text-dark);display:flex;min-height:100vh;font-size:14px;line-height:1.55}
+
+/* ══ SIDEBAR ══ */
+.sidebar{width:var(--sidebar-expanded);background:var(--sidebar-blue);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:width var(--transition);overflow:visible}
+.sidebar.collapsed{width:var(--sidebar-collapsed)}
+.sidebar-logo{height:var(--topbar-h);display:flex;align-items:center;padding:0 0 0 16px;border-bottom:1px solid rgba(255,255,255,0.12);flex-shrink:0;gap:9px;overflow:hidden;white-space:nowrap}
+.logo-mark{width:24px;height:24px;flex-shrink:0;background:#f6a623;clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+.logo-text{font-size:18px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;transition:opacity var(--transition)}
+.sidebar.collapsed .logo-text{opacity:0;pointer-events:none}
+.toggle-btn{margin-left:auto;flex-shrink:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.75);border-radius:4px;transition:background .14s}
+.toggle-btn:hover{background:var(--sidebar-hover);color:#fff}
+.toggle-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.sidebar-nav{flex:1;padding:8px 0 16px;overflow-y:auto;overflow-x:visible}
+.sidebar-nav::-webkit-scrollbar{width:0}
+.nav-group-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--nav-muted);padding:12px 20px 4px;white-space:nowrap;overflow:hidden;transition:opacity var(--transition),max-height var(--transition),padding var(--transition)}
+.sidebar.collapsed .nav-group-label{opacity:0;max-height:0;padding-top:0;padding-bottom:0;overflow:hidden}
+.nav-divider{height:1px;background:rgba(255,255,255,0.1);margin:4px 14px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;color:rgba(255,255,255,0.85);font-size:13px;font-weight:500;cursor:pointer;transition:background .14s,color .14s,padding var(--transition);position:relative;user-select:none;white-space:nowrap}
+.sidebar.collapsed .nav-item{padding:11px 0;justify-content:center;gap:0}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item.active{background:var(--sidebar-active);color:#fff;font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:0;top:7px;bottom:7px;width:3px;background:white;border-radius:0 3px 3px 0}
+.nav-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.nav-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav-label{flex:1;overflow:hidden;transition:opacity var(--transition)}
+.sidebar.collapsed .nav-label{opacity:0;width:0;flex:0}
+.nav-badge{flex-shrink:0;background:var(--danger);color:white;font-size:10px;font-weight:700;min-width:18px;height:18px;padding:0 5px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:opacity var(--transition)}
+.sidebar.collapsed .nav-badge{opacity:0;width:0;padding:0;min-width:0;overflow:hidden}
+.nav-tooltip{position:absolute;left:calc(var(--sidebar-collapsed) + 10px);top:50%;transform:translateY(-50%);background:#1a2332;color:white;font-size:12px;font-weight:500;padding:5px 10px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999}
+.nav-tooltip::before{content:'';position:absolute;right:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#1a2332}
+.sidebar.collapsed .nav-item:hover .nav-tooltip{opacity:1}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar-expanded);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left var(--transition)}
+body.sidebar-collapsed .main{margin-left:var(--sidebar-collapsed)}
+
+/* ══ TOPBAR ══ */
+.topbar{background:white;border-bottom:1px solid var(--border);height:var(--topbar-h);display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:50;flex-shrink:0}
+.topbar-title{font-size:18px;font-weight:700;color:var(--text-dark);white-space:nowrap}
+.topbar-help{width:22px;height:22px;border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+.search-wrap{flex:1;max-width:500px;display:flex;align-items:center;border:1.5px solid var(--border);border-radius:4px;overflow:hidden;background:white}
+.search-wrap input{flex:1;padding:9px 14px;border:none;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text-dark);outline:none}
+.search-wrap input::placeholder{color:var(--text-light)}
+.search-btn{background:var(--blue);border:none;padding:0 16px;height:38px;display:flex;align-items:center;cursor:pointer;flex-shrink:0}
+.search-btn svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2.2;stroke-linecap:round}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.topbar-user{display:flex;align-items:center;gap:9px;cursor:pointer}
+.user-avatar{width:34px;height:34px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700}
+.user-name{font-size:13px;font-weight:600;color:var(--text-dark)}
+.notif-btn{position:relative;cursor:pointer;display:flex;align-items:center}
+.notif-btn svg{width:20px;height:20px;stroke:var(--text-mid);fill:none;stroke-width:1.7;stroke-linecap:round}
+.notif-count{position:absolute;top:-4px;right:-6px;background:var(--danger);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1.5px solid white;padding:0 3px}
+
+/* ══ PAGE VIEWS ══ */
+.page-view{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0}
+.page-view.active{display:flex;animation:pgIn .2s ease}
+@keyframes pgIn{from{opacity:0;transform:translateX(4px)}to{opacity:1;transform:none}}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .13s;white-space:nowrap;border:1.5px solid transparent}
+/* Generic tooltip wrapper — works on any element */
+.tip{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.tip-label{
+  position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);
+  background:#1a2332;color:white;
+  font-size:11.5px;font-weight:500;font-family:'Inter',sans-serif;
+  padding:5px 10px;border-radius:5px;
+  white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .15s;z-index:200;
+}
+.tip-label::after{
+  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:#1a2332;
+}
+.tip:hover .tip-label{opacity:1}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-sm{padding:7px 14px;font-size:13px}
+.btn-icon{padding:8px 10px}
+.btn-ghost{background:white;border-color:var(--blue-border);color:var(--blue)}
+.btn-ghost:hover{background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark)}
+.btn-ghost svg{stroke:var(--blue)}
+.btn-danger{background:white;border-color:var(--blue-border);color:var(--blue)}
+.btn-danger:hover{background:var(--blue-bg);border-color:var(--blue)}
+.btn-danger svg{stroke:var(--blue)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:white}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-primary svg{stroke:white}
+.btn-primary:disabled{background:#a0aec0;border-color:#a0aec0;cursor:default}
+
+/* ══ CHIPS ══ */
+.chip{font-size:12px;font-weight:600;padding:4px 11px;border-radius:20px;border:1.5px solid;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.chip svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+.chip-blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.chip-gray{background:#f0f4f9;color:var(--text-mid);border-color:var(--border)}
+.chip-green{background:var(--success-bg);color:var(--success);border-color:var(--success-border)}
+.chip-orange{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+.chip-action{cursor:pointer;transition:filter .13s,transform .13s}
+.chip-action:hover{filter:brightness(.93);transform:translateY(-1px)}
+
+/* ══ SHARED FIELD ══ */
+.fl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;color:var(--text-light);margin-bottom:5px}
+.fv{font-size:13.5px;color:var(--text-dark);font-weight:500;line-height:1.45}
+.fv-lg{font-size:15px;font-weight:700;color:var(--text-dark)}
+.fv-sub{font-size:13.5px;color:var(--text-mid)}
+
+/* ══ ASIDE PANEL — position:fixed ══ */
+.aside-panel{
+  position:fixed;
+  top:var(--topbar-h);
+  right:0;
+  width:284px;
+  height:calc(100vh - var(--topbar-h));
+  background:white;
+  border-left:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  box-shadow:-4px 0 20px rgba(26,47,80,0.08);
+  z-index:40;
+}
+.aside-panel::-webkit-scrollbar{width:4px}
+.aside-panel::-webkit-scrollbar-track{background:transparent}
+.aside-panel::-webkit-scrollbar-thumb{background:#d0d8e4;border-radius:2px}
+.aside-hd{padding:18px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;background:white;position:sticky;top:0;z-index:2}
+.aside-hd-title{font-size:14.5px;font-weight:700;color:var(--text-dark);margin-bottom:10px}
+.aside-legend{display:flex;align-items:center;gap:14px;font-size:11.5px;font-weight:600;color:var(--text-mid)}
+.legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+
+/* Aside — selected-seller filter bar */
+.aside-sel-label{padding:12px 18px 10px;border-bottom:1px solid var(--border);background:#f8fafc;flex-shrink:0}
+.asl-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.asl-count{font-size:11.5px;font-weight:600;color:var(--text-dark);margin-bottom:2px}
+.asl-name{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none}
+.asl-name:hover{text-decoration:underline}
+.asl-close{width:24px;height:24px;background:#eaedf1;border:none;border-radius:4px;cursor:pointer;font-size:12px;color:var(--text-mid);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:background .12s}
+.asl-close:hover{background:var(--border);color:var(--text-dark)}
+
+/* ── Poster grid ── */
+/* 3 columns in single-seller view, 3 columns per seller section in all-view */
+.poster-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 18px 18px}
+.poster-cell{
+  border-radius:6px;overflow:hidden;aspect-ratio:2/3;
+  position:relative;cursor:pointer;
+  border:1px solid rgba(0,0,0,0.07);
+  transition:transform .15s,box-shadow .15s;
+}
+.poster-cell:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.2)}
+
+/* gradient + title at bottom */
+.poster-lbl{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%);
+  padding:14px 5px 6px;
+  font-size:7px;font-weight:700;color:rgba(255,255,255,.93);
+  text-align:center;line-height:1.3;
+}
+
+/* Status dot — top-right of each poster */
+.poster-status-dot{
+  position:absolute;top:5px;right:5px;z-index:3;
+  width:9px;height:9px;border-radius:50%;
+  border:1.5px solid white;
+  box-shadow:0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* Unavailable overlay */
+.poster-unavail{position:absolute;inset:0;background:rgba(255,255,255,.74);display:flex;align-items:center;justify-content:center;z-index:2}
+.poster-unavail svg{width:20px;height:20px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round}
+
+/* All-listings view — seller section header */
+.poster-seller-section{padding:14px 18px 0}
+.pss-header{
+  display:flex;align-items:center;gap:9px;margin-bottom:10px;
+  cursor:pointer;padding:8px 10px;border-radius:var(--r);
+  transition:background .12s;
+}
+.pss-header:hover{background:var(--page-bg)}
+.pss-logo{width:28px;height:28px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.pss-info{flex:1;min-width:0}
+.pss-name{font-size:12px;font-weight:700;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pss-count{font-size:11px;color:var(--text-light);margin-top:1px}
+.pss-badge{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.pss-section-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 0 16px}
+.pss-divider{height:1px;background:var(--border);margin:2px 0 14px}
+
+@keyframes posterIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
+.poster-cell{animation:posterIn .2s ease both}
+
+
+.page-bottom{background:white;border-top:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px}
+.page-bottom-text{font-size:13.5px;color:var(--text-mid)}
+.page-bottom-text strong{color:var(--text-dark);font-weight:600}
+
+.od-body{flex:1;display:flex;min-height:0;overflow:hidden}
+.od-main{flex:1;overflow-y:auto;padding:24px calc(284px + 32px) 60px 28px}
+
+.od-banner{display:flex;align-items:center;gap:12px;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--r);padding:14px 18px;margin-bottom:20px}
+.od-banner svg{width:16px;height:16px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
+.od-banner-text{font-size:13.5px;color:#1a365d;flex:1;line-height:1.5}
+
+.seller-row-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;cursor:pointer;transition:border-color .14s,box-shadow .14s}
+.seller-row-card:hover{border-color:#b8d0e8;box-shadow:0 2px 8px rgba(26,111,196,0.07)}
+.seller-row-card.sel-active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,111,196,0.1)}
+.src-main{display:flex;align-items:center;gap:16px;padding:16px 20px}
+.src-thumb{width:48px;height:48px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.src-body{flex:1;min-width:0}
+.src-name{font-size:14px;font-weight:600;color:var(--text-dark);margin-bottom:3px}
+.src-name em{color:var(--blue);font-style:normal;font-weight:700}
+.src-entity{font-size:12px;color:var(--text-light)}
+.src-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.src-price{font-size:15px;font-weight:700;color:var(--text-dark)}
+.dismiss-btn{width:28px;height:28px;border:1.5px solid var(--border);border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);font-size:13px;transition:all .13s;flex-shrink:0}
+.dismiss-btn:hover{border-color:#fc8181;background:#fff5f5;color:var(--danger)}
+
+.info-block{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.ib-grid2{display:grid;grid-template-columns:1fr 1fr}
+.ib-cell{padding:16px 20px;border-right:1px solid var(--border)}
+.ib-cell:last-child{border-right:none}
+.ib-full{padding:16px 20px}
+.ib-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;background:white;border-bottom:1px solid var(--border);transition:background .12s;user-select:none}
+.ib-toggle:hover{background:#f7fafd}
+.ib-toggle-label{font-size:13.5px;color:var(--text-dark);font-weight:500}
+.ib-toggle svg{width:14px;height:14px;stroke:var(--text-light);fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform .18s}
+.info-block.closed .ib-toggle svg{transform:rotate(-90deg)}
+.ib-body{display:block}
+.info-block.closed .ib-body{display:none}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;padding:16px 20px}
+
+.lang-tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.lang-tbl col.col-title{width:38%}
+.lang-tbl col.col-lang{width:38%}
+.lang-tbl col.col-prov{width:24%}
+.lang-tbl th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light);padding:8px 20px;border-bottom:1px solid var(--border);text-align:left;background:#fafbfd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lang-tbl td{padding:10px 20px;border-bottom:1px solid #f0f4f8;color:var(--text-dark);overflow:hidden;text-overflow:ellipsis}
+.lang-tbl tr:last-child td{border-bottom:none}
+.lang-sec-hd{font-size:13.5px;font-weight:700;color:var(--text-dark);padding:14px 20px 4px}
+
+.rights-card{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.rc-title{padding:13px 20px;background:#fafbfd;border-bottom:1px solid var(--border)}
+.rc-type{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-light);margin-bottom:2px}
+.rc-group{font-size:14.5px;font-weight:700;color:var(--text-dark)}
+.rc-row{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.rc-row:last-child{border-bottom:none}
+.rc-row.unavail{background:#fff5f5}
+.rc-row-left{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.rc-name{font-size:13.5px;font-weight:600;color:var(--text-dark)}
+.rc-row.unavail .rc-name{color:var(--text-light)}
+.rc-row-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.rc-runs-row{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;font-size:13.5px;color:var(--text-mid);border-bottom:1px solid var(--border)}
+.rc-runs-row:last-child{border-bottom:none}
+.unavail-tag{display:none}
+.unavail-icon{width:16px;height:16px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round}
+/* Tooltip on unavail icon */
+.unavail-tip{position:relative;display:inline-flex;align-items:center;cursor:default}
+.unavail-tip-label{
+  position:absolute;right:22px;top:50%;transform:translateY(-50%);
+  background:#1a2332;color:white;font-size:11.5px;font-weight:600;
+  padding:5px 10px;border-radius:5px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .15s;z-index:100;
+}
+.unavail-tip-label::after{
+  content:'';position:absolute;left:100%;top:50%;transform:translateY(-50%);
+  border:5px solid transparent;border-left-color:#1a2332;
+}
+.unavail-tip:hover .unavail-tip-label{opacity:1}
+
+.price-card{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.pc-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;transition:background .12s;user-select:none}
+.pc-toggle:hover{background:#f7fafd}
+.pc-toggle span{font-size:13.5px;font-weight:600;color:var(--text-dark)}
+.pc-toggle svg{width:14px;height:14px;stroke:var(--text-light);fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform .18s}
+.price-card.closed .pc-toggle svg{transform:rotate(-90deg)}
+.pc-body{border-top:1px solid var(--border);display:block}
+.price-card.closed .pc-body{display:none}
+.pc-row{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-bottom:1px solid #f0f4f8;font-size:13.5px}
+.pc-row:last-child{border-bottom:none}
+.pc-seller{color:var(--blue);font-weight:600;cursor:pointer}
+.pc-seller:hover{text-decoration:underline}
+.pc-amt{font-weight:600;color:var(--text-dark)}
+.pc-subtotal{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--text-mid)}
+.pc-total{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-top:2px solid var(--border);font-size:14px;font-weight:700;color:var(--text-dark)}
+.pc-total-amt{font-size:20px;font-weight:700;color:var(--blue)}
+
+/* ════════════════════════════════
+   DEAL MEMO
+════════════════════════════════ */
+.dm-body{flex:1;display:flex;min-height:0;overflow:hidden}
+.dm-main{flex:1;overflow-y:auto;padding:24px calc(284px + 32px) 60px 28px}
+
+.dm-hd{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.dm-title{font-size:24px;font-weight:700;color:var(--text-dark);letter-spacing:-.3px}
+.dm-hd-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+.dm-meta{display:flex;background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px}
+.dmc{padding:15px 20px;border-right:1px solid var(--border);flex:1}
+.dmc:last-child{border-right:none}
+.dmc-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;color:var(--text-light);margin-bottom:5px}
+.dmc-value{font-size:13.5px;font-weight:600;color:var(--text-dark)}
+
+.dm-status-bar{display:flex;align-items:center;gap:10px;padding:13px 18px;margin-bottom:10px;border-radius:var(--r);font-size:13.5px;font-weight:500;border:1px solid}
+.dsb-accepted{background:var(--success-bg);border-color:var(--success-border);color:var(--success)}
+.dsb-waiting{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn)}
+.dsb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:currentColor}
+/* Combined single-line status bar */
+.dm-status-combined{
+  display:flex;align-items:center;
+  background:white;border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+  margin-bottom:14px;
+}
+.dsc-item{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 18px;font-size:13px;font-weight:600;
+  flex:1;
+}
+.dsc-accepted{background:var(--success-bg);color:var(--success)}
+.dsc-accepted .dsb-dot{background:var(--success)}
+.dsc-waiting{background:var(--warn-bg);color:var(--warn)}
+.dsc-waiting .dsb-dot{background:var(--warn)}
+.dsc-sep{width:1px;background:var(--border);align-self:stretch;flex-shrink:0}
+
+.memo-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;transition:border-color .14s,box-shadow .14s}
+.memo-card:hover{border-color:#b8d0e8}
+.memo-card.expanded{border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,111,196,0.08)}
+.mc-row{display:flex;align-items:center;gap:16px;padding:16px 20px;cursor:pointer;user-select:none}
+.mc-row:hover{background:#fafcff}
+.mc-logo{width:44px;height:44px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.mc-info{flex:1;min-width:0}
+.mc-type{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-light);margin-bottom:2px}
+.mc-name{font-size:14px;font-weight:700;color:var(--blue);margin-bottom:2px}
+.mc-count{font-size:12.5px;color:var(--text-mid)}
+.mc-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.mc-price{font-size:15px;font-weight:700;color:var(--text-dark)}
+.mc-chev{width:28px;height:28px;border:1.5px solid var(--border);border-radius:5px;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);transition:all .13s;flex-shrink:0}
+.mc-chev:hover{border-color:var(--blue);color:var(--blue)}
+.mc-chev svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform .18s}
+.memo-card.expanded .mc-chev svg{transform:rotate(180deg)}
+
+.mc-expanded{display:none;border-top:1.5px solid var(--blue-border);background:#fafcff}
+.memo-card.expanded .mc-expanded{display:block;animation:pgIn .15s ease}
+.mc-exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--border)}
+.mc-exp-cell{background:#fafcff;padding:22px 24px}
+.mc-role-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;color:var(--text-light);margin-bottom:7px}
+.mc-co-name{font-size:16px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.mc-reg{font-size:12px;font-family:'Courier New',monospace;color:var(--text-light);margin-bottom:16px}
+.mc-addr{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--text-mid);margin-bottom:9px;line-height:1.4}
+.mc-addr svg{width:14px;height:14px;stroke:var(--text-light);fill:none;stroke-width:1.7;stroke-linecap:round;flex-shrink:0}
+.mc-listings-row{margin-top:18px;display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.mc-listings-row span{font-size:13.5px;color:var(--text-mid)}
+.mc-listings-row strong{font-size:16px;font-weight:700;color:var(--text-dark)}
+.accept-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;background:var(--blue);border:none;border-radius:var(--r);color:white;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .13s}
+.accept-btn:hover{background:var(--blue-dark)}
+.accept-btn svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round}
+.accept-btn.done{background:var(--success);cursor:default}
+.accept-btn.done:hover{background:var(--success)}
+
+.sec-heading{font-size:17px;font-weight:700;color:var(--text-dark);margin:28px 0 14px;letter-spacing:-.2px}
+
+.gc-block{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.gc-grid2{display:grid;grid-template-columns:1fr 1fr}
+.gc-cell{padding:16px 20px;border-right:1px solid var(--border)}
+.gc-cell:last-child{border-right:none}
+.gc-full{padding:16px 20px}
+.gc-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;background:white;border-bottom:1px solid var(--border);transition:background .12s;user-select:none}
+.gc-toggle:hover{background:#f7fafd}
+.gc-toggle-lbl{font-size:13.5px;color:var(--text-dark);font-weight:500}
+.gc-toggle svg{width:14px;height:14px;stroke:var(--text-light);fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform .18s}
+.gc-block.closed .gc-toggle svg{transform:rotate(-90deg)}
+.gc-body{display:block}
+.gc-block.closed .gc-body{display:none}
+.pt-block{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+
+/* Modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(10,20,45,0.52);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-ov.open{display:flex}
+.modal-box{background:white;border-radius:8px;width:460px;max-width:96vw;padding:28px;box-shadow:0 20px 60px rgba(10,20,60,0.28);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.modal-title{font-size:18px;font-weight:700;color:var(--text-dark);margin-bottom:10px}
+.modal-body{font-size:13.5px;color:var(--text-mid);line-height:1.65;margin-bottom:24px}
+.modal-seller{color:var(--blue);font-weight:700}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px}
+.mbtn-cancel{padding:10px 20px;border:1.5px solid var(--border);border-radius:var(--r);background:white;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--text-mid)}
+.mbtn-cancel:hover{border-color:#aab4c0}
+.mbtn-confirm{padding:10px 22px;background:var(--blue);border:none;border-radius:var(--r);color:white;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .13s}
+.mbtn-confirm:hover{background:var(--blue-dark)}
+.mbtn-confirm svg{width:13px;height:13px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round}
+
+.toast{position:fixed;bottom:24px;right:24px;background:#1a2332;color:white;padding:13px 20px;border-radius:var(--r);font-size:13.5px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,0.2);z-index:999;transform:translateY(70px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark"></div>
+    <span class="logo-text">vuulr</span>
+    <div class="toggle-btn" onclick="toggleSB()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">Main</div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="nav-label">Home</span><div class="nav-tooltip">Home</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><span class="nav-label">Discover</span><div class="nav-tooltip">Discover</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><span class="nav-label">Dashboard</span><div class="nav-tooltip">Dashboard</div></div>
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">Deals</div>
+    <div class="nav-item active" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><span class="nav-label">Negotiations</span><span class="nav-badge">3</span><div class="nav-tooltip">Negotiations</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span class="nav-label">Messaging Center</span><span class="nav-badge">5</span><div class="nav-tooltip">Messaging</div></div>
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">Marketplace</div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><span class="nav-label">Content Market Live</span><div class="nav-tooltip">Market</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><span class="nav-label">Site News</span><div class="nav-tooltip">Site News</div></div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><span class="nav-label">FAQ</span><div class="nav-tooltip">FAQ</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.41 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><span class="nav-label">Contact Us</span><div class="nav-tooltip">Contact</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3H8M12 3v4"/></svg></div><span class="nav-label">Screening Rooms</span><div class="nav-tooltip">Screening</div></div>
+  </nav>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main" id="main">
+
+  <header class="topbar">
+    <span class="topbar-title">vuulr</span>
+    <div class="topbar-help">?</div>
+    <div class="search-wrap"><input type="text" placeholder="browse titles…"/><button class="search-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button></div>
+    <div class="topbar-right">
+      <div style="position:relative;cursor:pointer;display:flex;align-items:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-mid)" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><div class="notif-count" style="background:var(--blue)">0</div></div>
+      <div class="notif-btn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-count">3</div></div>
+      <div class="topbar-user"><div class="user-avatar">VU</div><div class="user-name">[Buyer] Vuulr</div></div>
+    </div>
+  </header>
+
+  <!-- ════════ OFFER DETAILS ════════ -->
+  <div class="page-view active" id="page-offer">
+    <div class="od-body">
+      <div class="od-main">
+        <!-- Offer header -->
+        <div style="margin-bottom:18px">
+          <!-- Title row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <h1 style="font-size:21px;font-weight:700;color:var(--text-dark);letter-spacing:-.3px">Courage + 9 Others</h1>
+              <span class="chip chip-blue" style="font-size:11.5px">Fast Bundle</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <div class="tip">
+                <button class="btn btn-danger btn-icon" onclick="toast('Cancelling offer…')">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                </button>
+                <span class="tip-label">Cancel Offer</span>
+              </div>
+              <div class="tip">
+                <button class="btn btn-ghost btn-icon" onclick="toast('Revising offer…')">
+                  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <span class="tip-label">Revise Offer</span>
+              </div>
+            </div>
+          </div>
+          <!-- Meta cells — same dm-meta block style -->
+          <div class="dm-meta">
+            <div class="dmc">
+              <div class="dmc-label">Offer ID</div>
+              <div class="dmc-value" style="font-family:'Courier New',monospace;font-size:13px;letter-spacing:.3px">OFF-2026-303604</div>
+            </div>
+            <div class="dmc">
+              <div class="dmc-label">Offer Created</div>
+              <div class="dmc-value">20 Mar 2026</div>
+            </div>
+            <div class="dmc">
+              <div class="dmc-label">Offer Type</div>
+              <div class="dmc-value">Fast Bundle</div>
+            </div>
+            <div class="dmc">
+              <div class="dmc-label">Total Sellers</div>
+              <div class="dmc-value">4 Sellers</div>
+            </div>
+          </div>
+        </div>
+        <div class="od-banner">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="od-banner-text"><strong>2 Sellers accepted your offer</strong> — your Deal Memos are ready &nbsp;·&nbsp; 2 Sellers haven't responded yet.</span>
+          <button class="btn btn-primary btn-sm" onclick="goToDeal()"><svg viewBox="0 0 24 24" style="stroke:white"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Review Deal Memo</button>
+        </div>
+        <div id="od-sellers"></div>
+        <div style="height:10px"></div>
+        <div class="info-block"><div class="ib-grid2"><div class="ib-cell"><div class="fl">Licensed Period</div><div style="display:flex;align-items:baseline;gap:12px;margin-top:3px"><span class="fv-lg">1 Year</span><span class="fv-sub">23 Apr 2026 – 22 Apr 2028</span></div></div><div class="ib-cell"><div class="fl">Delivery Date</div><div class="fv" style="margin-top:3px">To be agreed in custom terms</div></div></div></div>
+        <div class="info-block"><div class="ib-toggle" onclick="toggleIB(this)"><span class="ib-toggle-label">Licensed Region</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div><div class="ib-body"><div class="pill-row"><span class="chip chip-gray">UK</span><span class="chip chip-gray">APAC</span><span class="chip chip-gray">ANZ</span><span class="chip chip-gray">LATAM</span></div></div></div>
+        <div class="info-block"><div class="ib-toggle" onclick="toggleIB(this)"><span class="ib-toggle-label">Licensed Channels / Platforms</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div><div class="ib-body"><div class="pill-row"><span class="chip chip-gray">BFCTV</span><span class="chip chip-gray">Channel9</span><span class="chip chip-gray">Max YouTube</span></div></div></div>
+        <div class="info-block"><div class="ib-toggle" onclick="toggleIB(this)"><span class="ib-toggle-label">Languages</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div><div class="ib-body"><div class="lang-sec-hd">Original Audio Languages:</div><table class="lang-tbl"><colgroup><col class="col-title"/><col class="col-lang"/><col class="col-prov"/></colgroup><thead><tr><th>Title</th><th>Licensed primary audio language(s)</th><th>Provided by</th></tr></thead><tbody><tr><td style="color:var(--text-mid)">Me vs Mami's</td><td style="font-weight:600">Bahasa Indonesian</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">Curious Films</span></td></tr><tr><td style="color:var(--text-mid)">Kehne Ko Humsafar Hain: S1's</td><td style="font-weight:600">Hindi</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">A Pictures Intl</span></td></tr></tbody></table><div class="lang-sec-hd" style="margin-top:6px">Subtitles:</div><table class="lang-tbl"><colgroup><col class="col-title"/><col class="col-lang"/><col class="col-prov"/></colgroup><thead><tr><th>Title</th><th>Licensed primary subtitle(s)</th><th>Provided by</th></tr></thead><tbody><tr><td style="color:var(--text-mid)">Me vs Mami's</td><td style="font-weight:600">Danish</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">Curious Films</span></td></tr><tr><td style="color:var(--text-mid)">Kehne Ko Humsafar Hain: S1's</td><td style="font-weight:600">Danish</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">A Pictures Intl</span></td></tr></tbody></table></div></div>
+        <div class="info-block"><div class="ib-grid2"><div class="ib-cell"><div class="fl">Material Costs</div><div class="fv" style="margin-top:3px;font-weight:700">Included in Offer</div></div><div class="ib-cell"><div class="fl">Withholding Tax</div><div class="fv" style="margin-top:3px;font-weight:700">Included in Offer</div></div></div></div>
+        <div class="info-block"><div class="ib-full"><div class="fl">Payment Terms</div><div class="fv" style="margin-top:3px;font-weight:700">Upon Signature</div></div></div>
+        <div class="rights-card"><div class="rc-title"><div class="rc-type">Rights Types</div><div class="rc-group">Commercial Group 1</div></div><div class="rc-row"><div class="rc-row-left"><span class="rc-name">Free to Air – Terrestrial/Broadcast TV</span><span class="chip chip-blue">Exclusive</span></div></div><div class="rc-row"><div class="rc-row-left"><span class="rc-name">S-VOD</span><span class="chip chip-gray">Non-Exclusive</span><span class="chip chip-gray">Holdback: 1 Month</span></div></div><div class="rc-runs-row"><div><span style="font-weight:600">Unlimited Runs</span><span style="color:var(--text-light);margin-left:10px">By Flat Rate</span></div><div style="font-weight:600">For Entire Bundle: <span style="color:var(--blue)">USD 440</span></div></div></div>
+        <div class="rights-card"><div class="rc-title"><div class="rc-type">Rights Types</div><div class="rc-group">Commercial Group 2</div></div><div class="rc-row"><div class="rc-row-left"><span class="rc-name">Free to Air – Terrestrial/Broadcast TV</span><span class="chip chip-blue">Exclusive</span></div></div><div class="rc-row unavail"><div class="rc-row-left"><span class="rc-name">S-VOD</span><span class="chip chip-gray">Non-Exclusive</span><span class="chip chip-gray">Holdback: 1 Month</span></div><div class="rc-row-right"><div class="unavail-tip"><svg class="unavail-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span class="unavail-tip-label">Rights no longer available</span></div></div></div><div class="rc-runs-row"><div><span style="font-weight:600">Limited: 10 runs per exhibition week.</span><span style="color:var(--text-light);margin-left:10px">By Flat Rate</span></div><div style="font-weight:600">USD 30.00 per episode for 32 episodes: <span style="color:var(--blue)">USD 960</span></div></div></div>
+        <div class="price-card"><div class="pc-toggle" onclick="this.closest('.price-card').classList.toggle('closed')"><span>Price breakdown</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div><div class="pc-body"><div class="pc-row"><span class="pc-seller">Take That Television</span><span class="pc-amt">USD 350</span></div><div class="pc-row"><span class="pc-seller">Pictre Inc.</span><span class="pc-amt">USD 350</span></div><div class="pc-row"><span class="pc-seller">A Pictures Intl Distribution LLC</span><span class="pc-amt">USD 350</span></div><div class="pc-row"><span class="pc-seller">Curious Films</span><span class="pc-amt">USD 350</span></div><div class="pc-subtotal"><span>Guaranteed License Fee for License Period</span><span style="font-weight:600;color:var(--text-dark)">USD 1400</span></div></div><div class="pc-total"><span>Total Potential License Fee for License Period</span><span class="pc-total-amt">USD 1400</span></div></div>
+      </div>
+      <!-- Right panel -->
+      <div class="aside-panel" id="od-aside"><div class="aside-hd"><div class="aside-hd-title">Listing Details</div><div class="aside-legend"><span><span class="legend-dot" style="background:#276749"></span>Accepted</span><span><span class="legend-dot" style="background:#f6a623"></span>Pending</span><span><span class="legend-dot" style="background:var(--danger)"></span>Rejected</span></div></div><div id="od-aside-body"></div></div>
+    </div>
+    <div class="page-bottom"><span class="page-bottom-text"><strong>2 Sellers</strong> accepted — Deal Memos ready &nbsp;·&nbsp; <strong>2 Sellers</strong> haven't responded.</span><button class="btn btn-primary btn-sm" onclick="goToDeal()"><svg viewBox="0 0 24 24" style="stroke:white"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Review Deal Memo</button></div>
+  </div>
+
+  <!-- ════════ DEAL MEMO ════════ -->
+  <div class="page-view" id="page-deal">
+    <div class="dm-body">
+      <div class="dm-main">
+        <div class="dm-hd">
+          <div class="dm-title">Review Deal Memo</div>
+          <span class="chip chip-orange" id="dm-status-chip"><span style="width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0"></span>In Progress</span>
+          <div class="dm-hd-right">
+            <div class="tip">
+              <button class="btn btn-ghost btn-sm" onclick="goToOffer()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Offer Details</button>
+              <span class="tip-label">Back to Offer Details</span>
+            </div>
+            <div class="tip">
+              <button class="btn btn-ghost btn-icon" onclick="toast('Opening editor…')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <span class="tip-label">Edit Deal Memo</span>
+            </div>
+            <div class="tip">
+              <button class="btn btn-danger btn-icon" onclick="toast('Cancel offer…')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
+              <span class="tip-label">Cancel Offer</span>
+            </div>
+          </div>
+        </div>
+        <div class="dm-meta">
+          <div class="dmc"><div class="dmc-label">Deal Memo ID</div><div class="dmc-value">303604-6</div></div>
+          <div class="dmc"><div class="dmc-label">Date of Offer</div><div class="dmc-value">20 Mar 2026</div></div>
+          <div class="dmc"><div class="dmc-label">Date of Memo</div><div class="dmc-value">24 April 2026</div></div>
+          <div class="dmc"><div class="dmc-label">Licensor (Seller)</div><div class="dmc-value">4 Sellers</div></div>
+        </div>
+        <div class="dm-status-combined">
+          <div class="dsc-item dsc-accepted"><div class="dsb-dot"></div><strong>Offer Accepted by 2 Sellers</strong></div>
+          <div class="dsc-sep"></div>
+          <div class="dsc-item dsc-waiting"><div class="dsb-dot"></div><strong>2 Awaiting for response</strong></div>
+        </div>
+        <div id="dm-seller-cards"></div>
+        <div class="sec-heading">General Constraints</div>
+        <div class="gc-block"><div class="gc-grid2"><div class="gc-cell"><div class="fl">Licensed Period</div><div style="display:flex;align-items:baseline;gap:12px;margin-top:3px"><span class="fv-lg">1 Year</span><span class="fv-sub">23 Apr 2026 – 22 Apr 2028</span></div></div><div class="gc-cell"><div class="fl">Delivery Date</div><div class="fv" style="margin-top:3px">To be agreed in custom terms</div></div></div></div>
+        <div class="gc-block"><div class="gc-toggle" onclick="toggleGC(this)"><span class="gc-toggle-lbl">Licensed Region</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div><div class="gc-body"><div class="pill-row"><span class="chip chip-gray">UK</span><span class="chip chip-gray">APAC</span><span class="chip chip-gray">ANZ</span><span class="chip chip-gray">LATAM</span></div></div></div>
+        <div class="gc-block"><div class="gc-toggle" onclick="toggleGC(this)"><span class="gc-toggle-lbl">Licensed Channels / Platforms</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div><div class="gc-body"><div class="pill-row"><span class="chip chip-gray">BFCTV</span><span class="chip chip-gray">Channel9</span><span class="chip chip-gray">Max YouTube</span></div></div></div>
+        <div class="gc-block"><div class="gc-toggle" onclick="toggleGC(this)"><span class="gc-toggle-lbl">Languages</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div><div class="gc-body"><div class="lang-sec-hd">Original Audio Languages:</div><table class="lang-tbl"><colgroup><col class="col-title"/><col class="col-lang"/><col class="col-prov"/></colgroup><thead><tr><th>Title</th><th>Licensed primary audio language(s)</th><th>Provided by</th></tr></thead><tbody><tr><td style="color:var(--text-mid)">Me vs Mami's</td><td style="font-weight:600">Bahasa Indonesian</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">Curious Films</span></td></tr><tr><td style="color:var(--text-mid)">Kehne Ko Humsafar Hain: S1's</td><td style="font-weight:600">Hindi</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">A Pictures Intl</span></td></tr></tbody></table><div class="lang-sec-hd" style="margin-top:6px">Subtitles:</div><table class="lang-tbl"><colgroup><col class="col-title"/><col class="col-lang"/><col class="col-prov"/></colgroup><thead><tr><th>Title</th><th>Licensed primary subtitle(s)</th><th>Provided by</th></tr></thead><tbody><tr><td style="color:var(--text-mid)">Me vs Mami's</td><td style="font-weight:600">Danish</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">Curious Films</span></td></tr><tr><td style="color:var(--text-mid)">Kehne Ko Humsafar Hain: S1's</td><td style="font-weight:600">Danish</td><td>Seller<br><span style="font-size:11px;color:var(--text-light)">A Pictures Intl</span></td></tr></tbody></table></div></div>
+        <div class="sec-heading">Rights &amp; Commercials</div>
+        <div class="rights-card"><div class="rc-title"><div class="rc-type">Rights Types</div><div class="rc-group">Commercial Group 1</div></div><div class="rc-row"><div class="rc-row-left"><span class="rc-name">Free to Air – Terrestrial/Broadcast TV</span><span class="chip chip-blue">Exclusive</span></div></div><div class="rc-row"><div class="rc-row-left"><span class="rc-name">S-VOD</span><span class="chip chip-gray">Non-Exclusive</span><span class="chip chip-gray">Holdback: 1 Month</span></div></div><div class="rc-runs-row"><div><span style="font-weight:600">Unlimited Runs</span><span style="color:var(--text-light);margin-left:10px">By Flat Rate</span></div><div style="font-weight:600">For Entire Bundle: <span style="color:var(--blue)">USD 440</span></div></div></div>
+        <div class="rights-card"><div class="rc-title"><div class="rc-type">Rights Types</div><div class="rc-group">Commercial Group 2</div></div><div class="rc-row"><div class="rc-row-left"><span class="rc-name">Free to Air – Terrestrial/Broadcast TV</span><span class="chip chip-blue">Exclusive</span></div></div><div class="rc-row unavail"><div class="rc-row-left"><span class="rc-name">S-VOD</span><span class="chip chip-gray">Non-Exclusive</span><span class="chip chip-gray">Holdback: 1 Month</span></div><div class="rc-row-right"><div class="unavail-tip"><svg class="unavail-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span class="unavail-tip-label">Rights no longer available</span></div></div></div><div class="rc-runs-row"><div><span style="font-weight:600">Limited: 10 runs per exhibition week.</span><span style="color:var(--text-light);margin-left:10px">By Flat Rate</span></div><div style="font-weight:600">USD 30.00 per episode for 32 episodes: <span style="color:var(--blue)">USD 960</span></div></div></div>
+        <div class="sec-heading">Payment Terms</div>
+        <div class="pt-block"><div class="gc-grid2" style="border-bottom:1px solid var(--border)"><div class="gc-cell"><div class="fl">Material Costs</div><div class="fv" style="margin-top:3px;font-weight:700">Included in Offer</div></div><div class="gc-cell"><div class="fl">Withholding Tax</div><div class="fv" style="margin-top:3px;font-weight:700">Included in Offer</div></div></div><div class="gc-full"><div class="fl">Payment Terms</div><div class="fv" style="margin-top:3px;font-weight:700">Upon Signature</div></div></div>
+      </div>
+      <!-- Right panel -->
+      <div class="aside-panel" id="dm-aside"><div class="aside-hd"><div class="aside-hd-title">Listing Details</div><div class="aside-legend"><span><span class="legend-dot" style="background:#276749"></span>Accepted</span><span><span class="legend-dot" style="background:#f6a623"></span>Pending</span><span><span class="legend-dot" style="background:var(--danger)"></span>Rejected</span></div></div><div id="dm-aside-body"></div></div>
+    </div>
+    <div class="page-bottom"><span class="page-bottom-text"><strong>2 Sellers</strong> accepted — Deal Memos ready &nbsp;·&nbsp; <strong>2 Sellers</strong> haven't responded.</span><button class="btn btn-primary btn-sm" onclick="document.querySelector('.dm-main').scrollTo({top:0,behavior:'smooth'})"><svg viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>Go to top</button></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="modal">
+  <div class="modal-box">
+    <div class="modal-title">Confirm e-Signature</div>
+    <div class="modal-body">You are about to electronically sign and accept the deal memo for <span class="modal-seller" id="modal-seller-name">this seller</span>. This confirms your agreement to all outlined terms.</div>
+    <div class="modal-footer"><button class="mbtn-cancel" onclick="closeModal()">Cancel</button><button class="mbtn-confirm" onclick="confirmSign()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Confirm &amp; Sign</button></div>
+  </div>
+</div>
+<div class="toast" id="toast-el"><span id="toast-msg"></span></div>
+
+<script>
+/* ══ DATA ══ */
+const S=[
+  {id:0,name:'A Pictures Intl Distribution LLC',entity:'Rhino Partners (RHNO 35-3454)',reg:'Reg. APICT-35-3454',init:'AP',bg:'#eee5ff',col:'#553c9a',listings:10,fee:350,status:'accepted',signed:false,expanded:true,addr:'Singapore',email:'contactus@apicture.com',phone:'+65 0000 6565',buyer_addr:'Singapore',buyer_email:'contactus@vuulr.com',buyer_phone:'+65 8181 8181',pc:['#6b2fa0','#8b4ac4','#5a2080','#7d3ab3','#4a1870','#9960d4','#3d1560','#6b2fa0','#8b4ac4','#5a2080'],pt:['Pommi Aunty','Sherazade','The Lion Queen','Running Man','Pommi Aunty','Sherazade','Running Man','The Lion Queen','Pommi Aunty','Running Man'],ux:[8,9]},
+  {id:1,name:'Take That Television',entity:'Take That Television (APIC 222)',reg:'Reg. TTV-00-1122',init:'TT',bg:'#fffaf0',col:'#b7791f',listings:5,fee:350,status:'accepted',signed:false,expanded:false,addr:'London, UK',email:'deals@takethat.tv',phone:'+44 20 7000 1234',buyer_addr:'Singapore',buyer_email:'contactus@vuulr.com',buyer_phone:'+65 8181 8181',pc:['#b56a00','#8b4e00','#d4820a','#9c5a00','#7a4200'],pt:['Primetime S1','Primetime S2','Evening Show S3','Night Drama','Weekend Special'],ux:[]},
+  {id:2,name:'Curious Films',entity:'Rhino Partners (RHNO 35-3454)',reg:'Reg. CF-44-9900',init:'CF',bg:'#e3f0fb',col:'#1a6fc4',listings:2,fee:350,status:'waiting',signed:false,expanded:false,addr:'Auckland, NZ',email:'licensing@curiousfilms.nz',phone:'+64 9 000 1234',buyer_addr:'Singapore',buyer_email:'contactus@vuulr.com',buyer_phone:'+65 8181 8181',pc:['#1a5299','#0d3b7a'],pt:['Me vs Mami','Bodlicious S1'],ux:[]},
+  {id:3,name:'Pictre Inc.',entity:'A Picture Inc (APIC 222)',reg:'Reg. APIC-35-3454',init:'PI',bg:'#f0fff4',col:'#276749',listings:5,fee:350,status:'waiting',signed:false,expanded:false,addr:'Sydney, Australia',email:'deals@pictre.com',phone:'+61 2 9000 1234',buyer_addr:'Singapore',buyer_email:'contactus@vuulr.com',buyer_phone:'+65 8181 8181',pc:['#2a5298','#1a3a6b','#3d6b9e','#1e4d7b','#2c5f8a'],pt:['Shehzade','Best of Season','Summer S1','Rooftop Drama','City Lights'],ux:[]}
+];
+
+let pendingId=-1,toastTimer,odActive=null,dmActive=null;
+
+/* ══ ASIDE PANEL ══ */
+function statusDotColor(s){
+  if(s.signed)               return '#276749'; // signed — green
+  if(s.status==='accepted')  return '#276749'; // accepted — green
+  return '#f6c000'; // awaiting/pending — yellow
+}
+function statusDotTitle(s){
+  if(s.signed)               return 'Signed';
+  if(s.status==='accepted')  return 'Accepted';
+  return 'Awaiting response';
+}
+
+function buildPosterCells(s, delay=0){
+  const dotCol = statusDotColor(s);
+  const dotTitle = statusDotTitle(s);
+  return s.pc.map((c,i)=>{
+    const unavail = s.ux.includes(i);
+    return `<div class="poster-cell" style="background:${c};animation-delay:${(delay+i)*0.025}s" title="${s.pt[i]||'Title '+(i+1)} — ${dotTitle}">
+      <div class="poster-status-dot" style="background:${dotCol}" title="${dotTitle}"></div>
+      <div class="poster-lbl">${s.pt[i]||'Title '+(i+1)}</div>
+      ${unavail?`<div class="poster-unavail"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderAside(bodyId, sellerId){
+  const el = document.getElementById(bodyId);
+  const page = bodyId==='od-aside-body' ? 'od' : 'dm';
+
+  if(sellerId !== null){
+    /* ── Single seller view ── */
+    const s = S.find(x=>x.id===sellerId);
+    if(!s) return;
+    const dotCol = statusDotColor(s);
+    const dotTitle = statusDotTitle(s);
+    el.innerHTML = `
+      <div class="aside-sel-label">
+        <div class="asl-row">
+          <div>
+            <div class="asl-count">${s.listings} Listings by</div>
+            <a class="asl-name" href="#">${s.name}</a>
+          </div>
+          <button class="asl-close" onclick="clearAside('${bodyId}')" title="Show all listings">✕</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+          <span style="width:9px;height:9px;border-radius:50%;background:${dotCol};display:inline-block;border:1.5px solid white;box-shadow:0 0 0 1px ${dotCol}"></span>
+          <span style="font-size:12px;font-weight:600;color:var(--text-mid)">${dotTitle}</span>
+        </div>
+      </div>
+      <div class="poster-grid">${buildPosterCells(s,0)}</div>`;
+  } else {
+    /* ── All listings view — thumbnails grouped by seller ── */
+    let html = '';
+    let delay = 0;
+    S.forEach((s,idx)=>{
+      const dotCol = statusDotColor(s);
+      const dotTitle = statusDotTitle(s);
+      html += `
+        <div class="poster-seller-section">
+          <div class="pss-header" onclick="selectAside('${bodyId}',${s.id},'${page}')" title="Filter to ${s.name}">
+            <div class="pss-logo" style="background:${s.bg};color:${s.col}">${s.init}</div>
+            <div class="pss-info">
+              <div class="pss-name">${s.name}</div>
+              <div class="pss-count">${s.listings} listings · <span style="color:${dotCol};font-weight:600">${dotTitle}</span></div>
+            </div>
+            <div class="pss-badge" style="background:${dotCol};border:1.5px solid white;box-shadow:0 0 0 1px ${dotCol}"></div>
+          </div>
+          <div class="pss-section-grid">${buildPosterCells(s, delay)}</div>
+        </div>
+        ${idx < S.length-1 ? '<div class="pss-divider"></div>' : ''}`;
+      delay += s.pc.length;
+    });
+    el.innerHTML = html;
+  }
+}
+
+function selectAside(bodyId, id, page){
+  if(page==='od'){ odActive=id; highlightOD(id); }
+  else { dmActive=id; }
+  renderAside(bodyId, id);
+}
+
+function clearAside(bodyId){
+  if(bodyId==='od-aside-body'){ odActive=null; highlightOD(null); }
+  else dmActive=null;
+  renderAside(bodyId, null);
+}
+
+/* ══ OFFER DETAIL SELLERS ══ */
+function renderODSellers(){
+  document.getElementById('od-sellers').innerHTML=S.map(s=>{
+    const a=s.status==='accepted';
+    const chip=a?`<span class="chip chip-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Offer Accepted</span>`:`<span class="chip chip-orange">Awaiting response</span>`;
+    return`<div class="seller-row-card" id="od-row-${s.id}" onclick="odClick(${s.id})"><div class="src-main"><div class="src-thumb" style="background:${s.bg};color:${s.col}">${s.init}</div><div class="src-body"><div class="src-name"><strong>${s.listings} Listings</strong> by <em>${s.name}</em></div><div class="src-entity">${s.entity}</div></div><div class="src-actions">${chip}<span class="src-price">$ ${s.fee}</span><div class="dismiss-btn" onclick="event.stopPropagation();toast('Dismissed')">✕</div></div></div></div>`;
+  }).join('');
+}
+
+function odClick(id){
+  if(odActive===id){odActive=null;highlightOD(null);renderAside('od-aside-body',null);}
+  else{odActive=id;highlightOD(id);renderAside('od-aside-body',id);}
+}
+
+function highlightOD(id){
+  document.querySelectorAll('.seller-row-card').forEach(el=>el.classList.remove('sel-active'));
+  if(id!==null){const el=document.getElementById('od-row-'+id);if(el)el.classList.add('sel-active');}
+}
+
+/* ══ DEAL MEMO CARDS ══ */
+function renderDMCards(){
+  document.getElementById('dm-seller-cards').innerHTML=S.map(s=>{
+    const a=s.status==='accepted';
+    let badge='';
+    if(a&&!s.signed) badge=`<span class="chip chip-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>eSigned by Seller</span><span class="chip chip-blue chip-action" onclick="openModal(${s.id},event)"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Ready to Sign</span>`;
+    else if(a&&s.signed) badge=`<span class="chip chip-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>eSigned by Seller</span><span class="chip chip-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Signed by Vuulr</span>`;
+    else badge=`<span class="chip chip-orange">Awaiting response</span>`;
+
+    let exp='';
+    if(a&&s.expanded){
+      const btn=s.signed?`<button class="accept-btn done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Signed by Vuulr</button>`:`<button class="accept-btn" onclick="openModal(${s.id},event)"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Accept / eSign</button>`;
+      exp=`<div class="mc-expanded"><div class="mc-exp-grid">
+        <div class="mc-exp-cell">
+          <div class="mc-role-lbl">Licensor (Seller)</div>
+          <div class="mc-co-name">${s.name}</div><div class="mc-reg">${s.reg}</div>
+          <div class="mc-addr"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${s.addr}</div>
+          <div class="mc-addr"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${s.email}</div>
+          <div class="mc-addr"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.41 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${s.phone}</div>
+          <div class="mc-listings-row"><span>${s.listings} Listings</span><strong>$ ${s.fee}</strong></div>
+          <span class="chip chip-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>eSigned by Seller</span>
+        </div>
+        <div class="mc-exp-cell" style="display:flex;flex-direction:column;justify-content:space-between">
+          <div>
+            <div class="mc-role-lbl">Licensee (Buyer)</div>
+            <div class="mc-co-name">Vuulr</div><div class="mc-reg">Reg. VUULR-35-3454</div>
+            <div class="mc-addr"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${s.buyer_addr}</div>
+            <div class="mc-addr"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${s.buyer_email}</div>
+            <div class="mc-addr"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.41 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${s.buyer_phone}</div>
+          </div>
+          <div style="margin-top:20px">${btn}</div>
+        </div>
+      </div></div>`;
+    }
+
+    return`<div class="memo-card ${s.expanded?'expanded':''}" id="mc-${s.id}">
+      <div class="mc-row" onclick="toggleMC(${s.id})">
+        <div class="mc-logo" style="background:${s.bg};color:${s.col}">${s.init}</div>
+        <div class="mc-info"><div class="mc-type">Licensor (Seller)</div><div class="mc-name">${s.name}</div><div class="mc-count">${s.listings} Listings</div></div>
+        <div class="mc-actions">${badge}<span class="mc-price">$ ${s.fee}</span><div class="mc-chev"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div></div>
+      </div>${exp}</div>`;
+  }).join('');
+}
+
+function toggleMC(id){
+  const s=S.find(x=>x.id===id);
+  if(!s)return;
+  const was=s.expanded;
+  S.forEach(x=>{x.expanded=false;});
+  s.expanded=!was;
+  renderDMCards();
+  if(s.expanded){dmActive=id;renderAside('dm-aside-body',id);}
+  else{dmActive=null;renderAside('dm-aside-body',null);}
+}
+
+/* ══ TOGGLES ══ */
+function toggleIB(btn){btn.closest('.info-block').classList.toggle('closed')}
+function toggleGC(btn){btn.closest('.gc-block').classList.toggle('closed')}
+
+/* ══ NAV ══ */
+function goToDeal(){document.getElementById('page-offer').classList.remove('active');document.getElementById('page-deal').classList.add('active');renderDMCards();renderAside('dm-aside-body',dmActive);}
+function goToOffer(){document.getElementById('page-deal').classList.remove('active');document.getElementById('page-offer').classList.add('active');}
+
+/* ══ SIGN ══ */
+function openModal(id,e){if(e)e.stopPropagation();pendingId=id;document.getElementById('modal-seller-name').textContent=S.find(x=>x.id===id)?.name||'';document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');pendingId=-1;}
+function confirmSign(){
+  closeModal();
+  const s=S.find(x=>x.id===pendingId);
+  if(s){s.signed=true;s.expanded=true;}
+  S.forEach(x=>{if(x.id!==pendingId)x.expanded=false;});
+  renderDMCards();
+  dmActive=pendingId;renderAside('dm-aside-body',pendingId);
+  const allSigned=S.filter(x=>x.status==='accepted').every(x=>x.signed);
+  if(allSigned){const c=document.getElementById('dm-status-chip');c.className='chip chip-green';c.innerHTML='<span style="width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0"></span>Complete';}
+  toast('✓ Signed — '+(s?.name?.split(' ')[0]||''));
+}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+
+/* ══ SIDEBAR ══ */
+function toggleSB(){document.getElementById('sidebar').classList.toggle('collapsed');document.body.classList.toggle('sidebar-collapsed');}
+function navSet(el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');}
+
+/* ══ TOAST ══ */
+function toast(msg,d=2600){const t=document.getElementById('toast-el');document.getElementById('toast-msg').textContent=msg;clearTimeout(toastTimer);t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),d);}
+
+/* ══ INIT ══ */
+renderODSellers();
+renderDMCards();
+renderAside('od-aside-body',null);
+renderAside('dm-aside-body',null);
+</script>
+</body>
+</html>

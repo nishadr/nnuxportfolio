@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Negotiations — Vuulr</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar-blue:#1a6fc4;--sidebar-hover:rgba(255,255,255,0.12);--sidebar-active:rgba(255,255,255,0.18);
+  --white:#fff;--page-bg:#f4f7fb;--border:#dde3ed;--blue:#1a6fc4;--blue-dark:#155fa8;
+  --blue-bg:#e3f0fb;--blue-border:#bee3f8;--text-dark:#1a2332;--text-mid:#4a5568;--text-light:#8a96a8;
+  --nav-muted:rgba(255,255,255,0.45);--sidebar-expanded:230px;--sidebar-collapsed:58px;
+  --topbar-h:58px;--transition:0.22s ease;--danger:#e53e3e;
+  --success:#276749;--success-bg:#f0fff4;--success-border:#9ae6b4;
+  --warn:#b7791f;--warn-bg:#fffaf0;--warn-border:#fbd38d;
+  --teal:#0e9f9f;--teal-bg:#e6f7f7;--teal-border:#b2e8e8;
+  --r:5px;
+}
+body{font-family:'Inter',sans-serif;background:var(--page-bg);color:var(--text-dark);display:flex;min-height:100vh;font-size:13.5px;line-height:1.5}
+
+/* ══ SIDEBAR ══ */
+.sidebar{width:var(--sidebar-expanded);background:var(--sidebar-blue);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:width var(--transition);overflow:visible}
+.sidebar.collapsed{width:var(--sidebar-collapsed)}
+.sidebar-logo{height:var(--topbar-h);display:flex;align-items:center;padding:0 0 0 14px;border-bottom:1px solid rgba(255,255,255,0.12);flex-shrink:0;gap:8px;overflow:hidden;white-space:nowrap}
+.logo-mark{width:26px;height:26px;flex-shrink:0;background:#f6a623;clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+.logo-text{font-size:18px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;transition:opacity var(--transition)}
+.sidebar.collapsed .logo-text{opacity:0;pointer-events:none}
+.toggle-btn{margin-left:auto;flex-shrink:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.75);border-radius:4px;transition:background .14s}
+.toggle-btn:hover{background:var(--sidebar-hover);color:#fff}
+.toggle-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.sidebar-nav{flex:1;padding:8px 0 12px;overflow-y:auto;overflow-x:visible}
+.sidebar-nav::-webkit-scrollbar{width:0}
+.nav-divider{height:1px;background:rgba(255,255,255,0.1);margin:4px 14px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;color:rgba(255,255,255,0.85);font-size:13px;font-weight:500;cursor:pointer;transition:background .14s,color .14s,padding var(--transition);position:relative;user-select:none;white-space:nowrap}
+.sidebar.collapsed .nav-item{padding:11px 0;justify-content:center;gap:0}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item.active{background:var(--sidebar-active);color:#fff;font-weight:700}
+.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:white;border-radius:0 3px 3px 0}
+.nav-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.nav-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav-label{flex:1;overflow:hidden;transition:opacity var(--transition)}
+.sidebar.collapsed .nav-label{opacity:0;width:0;flex:0}
+.nav-badge{flex-shrink:0;background:var(--danger);color:white;font-size:10px;font-weight:700;min-width:18px;height:18px;padding:0 5px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:opacity var(--transition)}
+.sidebar.collapsed .nav-badge{opacity:0;width:0;padding:0;min-width:0;overflow:hidden}
+.nav-tooltip{position:absolute;left:calc(var(--sidebar-collapsed) + 10px);top:50%;transform:translateY(-50%);background:#1a2332;color:white;font-size:12px;font-weight:500;padding:5px 10px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999}
+.nav-tooltip::before{content:'';position:absolute;right:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#1a2332}
+.sidebar.collapsed .nav-item:hover .nav-tooltip{opacity:1}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar-expanded);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left var(--transition)}
+body.sidebar-collapsed .main{margin-left:var(--sidebar-collapsed)}
+
+/* ══ TOPBAR ══ */
+.topbar{background:white;border-bottom:1px solid var(--border);height:var(--topbar-h);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:50;flex-shrink:0}
+.topbar-title{font-size:18px;font-weight:700;color:var(--text-dark);white-space:nowrap}
+.topbar-help{width:22px;height:22px;border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:border-color .14s}
+.topbar-help:hover{border-color:var(--blue);color:var(--blue)}
+.search-wrap{flex:1;max-width:520px;display:flex;align-items:center;border:1.5px solid var(--border);border-radius:4px;overflow:hidden;background:white;transition:border-color .14s}
+.search-wrap:focus-within{border-color:var(--blue)}
+.search-wrap input{flex:1;padding:8px 14px;border:none;font-family:'Inter',sans-serif;font-size:13px;color:var(--text-dark);outline:none}
+.search-wrap input::placeholder{color:var(--text-light)}
+.search-btn{background:var(--blue);border:none;padding:0 16px;height:38px;display:flex;align-items:center;cursor:pointer;flex-shrink:0;transition:background .14s}
+.search-btn:hover{background:var(--blue-dark)}
+.search-btn svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2.2;stroke-linecap:round}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-icon-btn{position:relative;cursor:pointer;display:flex;align-items:center;width:32px;height:32px;justify-content:center}
+.topbar-icon-btn svg{width:20px;height:20px;stroke:var(--text-mid);fill:none;stroke-width:1.7;stroke-linecap:round}
+.topbar-badge{position:absolute;top:-3px;right:-4px;background:var(--danger);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1.5px solid white;padding:0 3px}
+.topbar-badge.teal{background:#0e9f9f}
+.topbar-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:4px;transition:background .14s}
+.topbar-user:hover{background:var(--page-bg)}
+.user-name-text{font-size:13px;font-weight:600;color:var(--text-dark)}
+.user-caret{width:14px;height:14px;stroke:var(--text-light);fill:none;stroke-width:2;stroke-linecap:round}
+.user-avatar{width:32px;height:32px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700}
+
+/* ══ PAGE CONTENT ══ */
+.page-content{flex:1;padding:24px 28px 48px}
+
+/* ══ FILTER BAR ══ */
+.filter-bar{background:white;border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:18px}
+.filter-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.filter-top-title{font-size:14px;font-weight:700;color:var(--text-dark);flex:1;min-width:180px}
+.filter-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filter-label{font-size:12.5px;font-weight:600;color:var(--text-mid);flex-shrink:0}
+.filter-select{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1.5px solid var(--border);border-radius:4px;background:white;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--text-dark);min-width:120px;justify-content:space-between;transition:border-color .14s;user-select:none}
+.filter-select:hover{border-color:var(--blue)}
+.filter-select svg{width:13px;height:13px;stroke:var(--text-light);fill:none;stroke-width:2.5;stroke-linecap:round}
+.filter-bottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--blue-bg);border:1.5px solid var(--blue-border);border-radius:20px;font-size:12px;font-weight:600;color:var(--blue);cursor:pointer;transition:all .13s;white-space:nowrap}
+.status-tag:hover{background:#d0e8f8}
+.status-tag-x{width:14px;height:14px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;flex-shrink:0;transition:background .13s}
+.status-tag:hover .status-tag-x{background:var(--blue-dark)}
+.clear-all{font-size:12.5px;font-weight:700;color:var(--blue);cursor:pointer;padding:4px 6px;border-radius:4px;transition:background .13s}
+.clear-all:hover{background:var(--blue-bg)}
+
+/* ══ LEGEND ══ */
+.legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 20px 0}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-mid)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* ══ DEALS TABLE ══ */
+.deals-table{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.deals-thead{display:grid;grid-template-columns:1fr 320px 160px 140px 80px;padding:10px 20px;border-bottom:1.5px solid var(--border);background:#fafbfd}
+.deals-thead-cell{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;color:var(--text-light);display:flex;align-items:center;gap:5px}
+.deals-thead-cell.sortable{cursor:pointer;transition:color .13s}
+.deals-thead-cell.sortable:hover{color:var(--blue)}
+.deals-thead-cell svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+
+.deal-row{display:grid;grid-template-columns:1fr 320px 160px 140px 80px;padding:0 20px;border-bottom:1px solid var(--border);transition:background .13s;cursor:pointer;align-items:center;min-height:90px}
+.deal-row:last-child{border-bottom:none}
+.deal-row:hover{background:#f7fafd}
+
+/* Deal cell */
+.deal-cell{display:flex;align-items:center;gap:14px;padding:14px 14px 14px 0}
+.deal-poster{width:50px;height:66px;border-radius:4px;flex-shrink:0;overflow:hidden;border:1px solid var(--border)}
+.deal-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.deal-poster-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;text-align:center;line-height:1.3;padding:4px}
+.deal-info{}
+.deal-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px}
+.badge-bundle{background:#f0f4f9;color:var(--text-mid);border:1px solid var(--border)}
+.badge-fast{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.deal-title{font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:3px;line-height:1.3}
+.deal-seller{font-size:12px;color:var(--text-mid);margin-bottom:1px}
+.deal-created{font-size:11.5px;color:var(--text-light)}
+
+/* Status cell */
+.status-cell{padding:14px 14px 14px 0}
+
+/* Progress bar status (bundle with multiple sellers) */
+.prog-status{}
+.prog-numbers{display:flex;align-items:center;gap:0;margin-bottom:6px}
+.prog-num{font-size:13.5px;font-weight:700;color:var(--text-dark);min-width:28px;text-align:center}
+.prog-bar-wrap{height:6px;border-radius:3px;overflow:hidden;display:flex;gap:2px;margin-bottom:6px}
+.prog-seg{height:100%;border-radius:3px;transition:width .3s}
+.seg-completed{background:#276749}
+.seg-accepted{background:#0e9f9f}
+.seg-pending{background:#f6a623}
+.seg-unavail{background:var(--danger)}
+.prog-label{font-size:12px;font-weight:600}
+.prog-label .pct{font-weight:700;font-size:13px}
+.prog-label .pipe{color:var(--text-light);margin:0 6px}
+.prog-action{color:var(--text-mid)}
+
+/* Tooltip for prog bar */
+.prog-tooltip-wrap{position:relative;display:inline-flex;align-items:center}
+.prog-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a2332;color:white;font-size:12px;font-weight:600;padding:6px 12px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:100}
+.prog-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1a2332}
+.prog-tooltip-wrap:hover .prog-tooltip{opacity:1}
+
+/* Single status */
+.single-status{}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12.5px;font-weight:600;border:1.5px solid;cursor:pointer;transition:all .13s;white-space:nowrap}
+.pill-accepted{background:var(--success-bg);color:var(--success);border-color:var(--success-border)}
+.pill-accepted:hover{background:#e8faf0}
+.pill-pending{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+.pill-pending:hover{background:#fff4e0}
+.status-pill-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.status-sub{font-size:12px;color:var(--text-light);margin-top:5px}
+.status-sub a{color:var(--blue);font-weight:600;text-decoration:none;cursor:pointer}
+.status-sub a:hover{text-decoration:underline}
+
+/* Value cell */
+.value-cell{padding:14px 14px 14px 0;font-size:15px;font-weight:700;color:var(--text-dark)}
+
+/* Expires cell */
+.expires-cell{padding:14px 14px 14px 0;font-size:13px;color:var(--text-mid)}
+
+/* Actions cell */
+.actions-cell{display:flex;align-items:center;gap:7px;padding:14px 0;justify-content:flex-end}
+.action-btn{width:30px;height:30px;border:1.5px solid var(--blue-border);border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .13s;flex-shrink:0}
+.action-btn svg{width:13px;height:13px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.action-btn:hover{background:var(--blue-bg);border-color:var(--blue)}
+.action-btn.delete{border-color:#fc8181}
+.action-btn.delete svg{stroke:var(--danger)}
+.action-btn.delete:hover{background:#fff5f5;border-color:var(--danger)}
+
+/* ══ EMPTY ROW (loading skeleton feel) ══ */
+.skeleton-row{display:flex;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border);align-items:center}
+.sk-box{background:#f0f4f8;border-radius:4px;height:14px;animation:skPulse 1.4s ease infinite}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ══ CHIPS ══ */
+.chip{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;border:1.5px solid;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.chip-blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.chip-teal{background:var(--teal-bg);color:var(--teal);border-color:var(--teal-border)}
+.chip-green{background:var(--success-bg);color:var(--success);border-color:var(--success-border)}
+.chip-orange{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+.chip-red{background:#fff5f5;color:var(--danger);border-color:#fc8181}
+
+/* ══ TOOLTIP (reusable) ══ */
+.tip{position:relative;display:inline-flex}
+.tip-lbl{position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);background:#1a2332;color:white;font-size:11.5px;font-weight:500;padding:5px 10px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9998}
+.tip-lbl::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1a2332}
+.tip:hover .tip-lbl{opacity:1}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a2332;color:white;padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,0.2);z-index:999;transform:translateY(70px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark"></div>
+    <span class="logo-text">vuulr</span>
+    <div class="toggle-btn" onclick="toggleSB()">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="nav-label">Home</span><div class="nav-tooltip">Home</div>
+    </div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <span class="nav-label">Discover</span><div class="nav-tooltip">Discover</div>
+    </div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <span class="nav-label">Dashboard</span><div class="nav-tooltip">Dashboard</div>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item active" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <span class="nav-label">Negotiations</span>
+      <span class="nav-badge">3</span>
+      <div class="nav-tooltip">Negotiations</div>
+    </div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <span class="nav-label">Messaging Center</span>
+      <span class="nav-badge" style="background:var(--teal)">5</span>
+      <div class="nav-tooltip">Messaging</div>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+      <span class="nav-label">Content Market Live</span><div class="nav-tooltip">Market</div>
+    </div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+      <span class="nav-label">Site News</span><div class="nav-tooltip">Site News</div>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <span class="nav-label">FAQ</span><div class="nav-tooltip">FAQ</div>
+    </div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.41 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+      <span class="nav-label">Contact Us</span><div class="nav-tooltip">Contact</div>
+    </div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3H8M12 3v4"/></svg></div>
+      <span class="nav-label">Screening Rooms</span><div class="nav-tooltip">Screening</div>
+    </div>
+    <div class="nav-item" onclick="navSet(this)">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      <span class="nav-label">Buyer Briefs</span><div class="nav-tooltip">Buyer Briefs</div>
+    </div>
+  </nav>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main" id="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <span class="topbar-title">Negotiations</span>
+    <div class="topbar-help">?</div>
+    <div class="search-wrap">
+      <input type="text" id="search-input" placeholder="Search by listing title(s), seller/buyer organization…" oninput="filterDeals()"/>
+      <button class="search-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-icon-btn tip">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="topbar-badge">0</span>
+        <span class="tip-lbl">Cart</span>
+      </div>
+      <div class="topbar-icon-btn tip">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="topbar-badge teal">3</span>
+        <span class="tip-lbl">Notifications</span>
+      </div>
+      <div class="topbar-user">
+        <span class="user-name-text">[Buyer] Vuulr</span>
+        <svg class="user-caret" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        <div class="user-avatar">VU</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <div class="page-content">
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-top">
+        <div class="filter-top-title">Manage your Offers/RFPs sent to Sellers</div>
+        <div class="filter-group">
+          <span class="filter-label">Seller</span>
+          <div class="filter-select" onclick="toast('Seller filter')">
+            <span>All</span>
+            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <span class="filter-label">Status</span>
+          <div class="filter-select" onclick="toast('Status filter')">
+            <span>3 selected</span>
+            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <!-- Active filter tags -->
+        <div class="filter-bottom" id="active-filters">
+          <span style="font-size:12.5px;font-weight:600;color:var(--text-mid)">Status</span>
+          <div class="status-tag" onclick="removeFilter(this,'Offer/Proposal Open')">
+            Offer/Proposal Open <span class="status-tag-x">✕</span>
+          </div>
+          <div class="status-tag" onclick="removeFilter(this,'RFP Open')">
+            RFP Open <span class="status-tag-x">✕</span>
+          </div>
+          <div class="status-tag" onclick="removeFilter(this,'Deal Memo')">
+            Deal Memo <span class="status-tag-x">✕</span>
+          </div>
+          <span class="clear-all" onclick="clearAllFilters()">Clear all</span>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#276749"></div>Completed</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#0e9f9f"></div>Accepted</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f6a623"></div>Pending</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div>Not available</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEALS TABLE -->
+    <div class="deals-table">
+      <!-- Table head -->
+      <div class="deals-thead">
+        <div class="deals-thead-cell">Deal</div>
+        <div class="deals-thead-cell">Status</div>
+        <div class="deals-thead-cell">Value</div>
+        <div class="deals-thead-cell sortable" onclick="sortByExpiry()">
+          Expires
+          <svg viewBox="0 0 24 24"><polyline points="12 5 12 19"/><polyline points="18 13 12 19 6 13"/></svg>
+        </div>
+        <div class="deals-thead-cell"></div>
+      </div>
+
+      <!-- Rows rendered by JS -->
+      <div id="deals-list"></div>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main -->
+
+<div class="toast" id="toast-el"><span id="toast-msg"></span></div>
+
+<script>
+/* ══ DATA ══ */
+const DEALS = [
+  {
+    id:0,
+    type:'fast-bundle',
+    poster:'https://via.placeholder.com/50x66/1a2332/bee3f8?text=SHERAZADE',
+    posterBg:'linear-gradient(160deg,#1a2332,#2a4070)',
+    posterLabel:'Sherazade',
+    title:'Courage, Sherazade + 8 more',
+    seller:'A Pictre Inc.',
+    created:'27 March 2026',
+    statusType:'progress',
+    segments:[
+      {count:1, pct:10, type:'completed', label:'Completed'},
+      {count:4, pct:32, type:'accepted', label:'Accepted'},
+      {count:5, pct:40, type:'pending', label:'Pending'},
+      {count:2, pct:18, type:'unavail', label:'Not available'},
+    ],
+    pct:50,
+    pctLabel:'50%',
+    actionLabel:'Pending | Action Required',
+    value:'USD 200',
+    expires:'25 Mar 2026',
+  },
+  {
+    id:1,
+    type:'bundle',
+    poster:'https://via.placeholder.com/50x66/7b1d1d/fca5a5?text=RUNNING+MAN',
+    posterBg:'linear-gradient(160deg,#7b1d1d,#a83232)',
+    posterLabel:'Running Man',
+    title:'Running Man + 23 more',
+    seller:'A Pictre Inc.',
+    created:'27 March 2026',
+    statusType:'progress',
+    segments:[
+      {count:20, pct:80, type:'accepted', label:'Accepted'},
+      {count:5, pct:20, type:'pending', label:'Pending'},
+    ],
+    pct:20,
+    pctLabel:'20%',
+    actionLabel:'Pending | Action Required',
+    tooltipText:'20 Accepted, 5 Pending',
+    value:'USD 340',
+    expires:'25 Mar 2026',
+  },
+  {
+    id:2,
+    type:'single',
+    poster:'https://via.placeholder.com/50x66/14532d/a7f3d0?text=FISH+HUNTER',
+    posterBg:'linear-gradient(160deg,#14532d,#166534)',
+    posterLabel:'Fish Hunter',
+    title:'The Last Fish Hunter',
+    seller:'A Pictre Inc.',
+    created:'27 March 2026',
+    statusType:'accepted',
+    value:'USD 100',
+    expires:'25 Mar 2026',
+    viewDealMemo:true,
+  },
+  {
+    id:3,
+    type:'single',
+    poster:'https://via.placeholder.com/50x66/6b2fa0/e9d5ff?text=MOVIE',
+    posterBg:'linear-gradient(160deg,#6b2fa0,#8b4ac4)',
+    posterLabel:'Movie',
+    title:'Movie',
+    seller:'A Pictre Inc.',
+    created:'27 March 2026',
+    statusType:'pending',
+    value:'USD 100',
+    expires:'25 Mar 2026',
+  },
+];
+
+let sortAsc = true;
+let toastTimer;
+
+/* ══ RENDER ══ */
+function renderDeals(deals){
+  const el = document.getElementById('deals-list');
+  if(!deals.length){
+    el.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-light);font-size:14px">No negotiations match your filters.</div>`;
+    return;
+  }
+  el.innerHTML = deals.map(d => buildRow(d)).join('');
+}
+
+function buildRow(d){
+  /* Poster */
+  const posterHtml = `<div class="deal-poster"><div class="deal-poster-placeholder" style="background:${d.posterBg};color:rgba(255,255,255,.75);font-size:7.5px;font-weight:700;text-align:center;line-height:1.35">${d.posterLabel}</div></div>`;
+
+  /* Badge */
+  const badge = d.type==='fast-bundle'
+    ? `<div class="deal-badge badge-fast">Fast Bundle</div>`
+    : d.type==='bundle'
+      ? `<div class="deal-badge badge-bundle">Bundle</div>`
+      : '';
+
+  /* Deal cell */
+  const dealCell = `<div class="deal-cell">
+    ${posterHtml}
+    <div class="deal-info">
+      ${badge}
+      <div class="deal-title">${d.title}</div>
+      <div class="deal-seller">Seller: &nbsp;<strong>${d.seller}</strong></div>
+      <div class="deal-created">Created: ${d.created}</div>
+    </div>
+  </div>`;
+
+  /* Status cell */
+  let statusCell = '';
+  if(d.statusType==='progress'){
+    /* Build bar segments */
+    const segs = d.segments.map(s=>{
+      const cls = s.type==='completed'?'seg-completed':s.type==='accepted'?'seg-accepted':s.type==='pending'?'seg-pending':'seg-unavail';
+      return `<div class="prog-seg ${cls}" style="flex:${s.pct}"></div>`;
+    }).join('');
+
+    /* Numbers above bar */
+    const nums = d.segments.map(s=>{
+      const col = s.type==='completed'?'#276749':s.type==='accepted'?'#0e9f9f':s.type==='pending'?'#f6a623':'var(--danger)';
+      return `<span class="prog-num" style="color:${col};flex:${s.pct}">${s.count}</span>`;
+    }).join('');
+
+    const tooltipHtml = d.tooltipText
+      ? `<div class="prog-tooltip">${d.tooltipText}</div>`
+      : '';
+
+    statusCell = `<div class="status-cell">
+      <div class="prog-status">
+        <div class="prog-numbers" style="display:flex">${nums}</div>
+        <div class="prog-tooltip-wrap">
+          <div class="prog-bar-wrap" style="width:260px">${segs}</div>
+          ${tooltipHtml}
+        </div>
+        <div class="prog-label">
+          <span class="pct" style="color:var(--warn)">${d.pctLabel}</span>
+          <span class="pipe">|</span>
+          <span class="prog-action">${d.actionLabel}</span>
+        </div>
+      </div>
+    </div>`;
+  } else if(d.statusType==='accepted'){
+    statusCell = `<div class="status-cell">
+      <div class="single-status">
+        <div class="status-pill pill-accepted">
+          <span class="status-pill-dot"></span>
+          Offer Accepted
+        </div>
+        ${d.viewDealMemo ? `<div class="status-sub"><a onclick="toast('Opening Deal Memo…')">View Deal Memo</a></div>` : ''}
+      </div>
+    </div>`;
+  } else {
+    statusCell = `<div class="status-cell">
+      <div class="single-status">
+        <div class="status-pill pill-pending">
+          <span class="status-pill-dot"></span>
+          Pending
+        </div>
+        <div class="status-sub">Waiting for seller response</div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="deal-row" onclick="rowClick(${d.id})">
+    ${dealCell}
+    ${statusCell}
+    <div class="value-cell">${d.value}</div>
+    <div class="expires-cell">${d.expires}</div>
+    <div class="actions-cell" onclick="event.stopPropagation()">
+      <div class="tip">
+        <button class="action-btn" onclick="toast('Editing deal ${d.id+1}…')">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <span class="tip-lbl">Edit</span>
+      </div>
+      <div class="tip">
+        <button class="action-btn delete" onclick="deleteRow(${d.id})">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+        <span class="tip-lbl">Cancel offer</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══ INTERACTIONS ══ */
+function rowClick(id){
+  const d = DEALS.find(x=>x.id===id);
+  if(!d) return;
+  if(d.statusType==='accepted' || d.statusType==='progress'){
+    toast('Opening offer details for "'+d.title+'"…');
+  } else {
+    toast('"'+d.title+'" — '+d.statusType);
+  }
+}
+
+function deleteRow(id){
+  const idx = DEALS.findIndex(x=>x.id===id);
+  if(idx===-1) return;
+  const name = DEALS[idx].title;
+  DEALS.splice(idx,1);
+  renderDeals(DEALS);
+  toast('Offer cancelled: "'+name+'"');
+}
+
+function sortByExpiry(){
+  sortAsc = !sortAsc;
+  DEALS.sort((a,b)=>{
+    const da = new Date(a.expires), db = new Date(b.expires);
+    return sortAsc ? da-db : db-da;
+  });
+  renderDeals(DEALS);
+}
+
+function filterDeals(){
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const filtered = q ? DEALS.filter(d=>d.title.toLowerCase().includes(q)||d.seller.toLowerCase().includes(q)) : DEALS;
+  renderDeals(filtered);
+}
+
+function removeFilter(el, label){
+  el.remove();
+  toast('Filter removed: '+label);
+  const remaining = document.querySelectorAll('.status-tag');
+  if(!remaining.length){
+    document.querySelector('.clear-all')?.remove();
+    document.querySelector('#active-filters > span')?.remove();
+  }
+}
+
+function clearAllFilters(){
+  const af = document.getElementById('active-filters');
+  af.innerHTML = '<span style="font-size:12.5px;color:var(--text-light)">No active filters</span>';
+  toast('All filters cleared');
+}
+
+/* ══ SIDEBAR / NAV ══ */
+function toggleSB(){ document.getElementById('sidebar').classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+function navSet(el){ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+
+/* ══ TOAST ══ */
+function toast(msg, d=2600){
+  const t=document.getElementById('toast-el');
+  document.getElementById('toast-msg').textContent=msg;
+  clearTimeout(toastTimer);t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),d);
+}
+
+/* ══ INIT ══ */
+renderDeals(DEALS);
+</script>
+</body>
+</html>

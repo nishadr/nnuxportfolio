@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Deal Memo — Version B · Vuulr</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar-blue:#1a6fc4;--sidebar-hover:rgba(255,255,255,0.12);--sidebar-active:rgba(255,255,255,0.18);
+  --white:#fff;--page-bg:#f4f7fb;--border:#dde3ed;--blue:#1a6fc4;--blue-dark:#155fa8;
+  --blue-bg:#e3f0fb;--blue-border:#bee3f8;--text-dark:#1a2332;--text-mid:#4a5568;--text-light:#8a96a8;
+  --nav-muted:rgba(255,255,255,0.45);--sidebar-expanded:230px;--sidebar-collapsed:58px;
+  --topbar-h:58px;--transition:0.22s ease;--danger:#e53e3e;
+  --success:#276749;--success-bg:#f0fff4;--success-border:#9ae6b4;
+  --warn:#b7791f;--warn-bg:#fffaf0;--warn-border:#fbd38d;
+  --r:6px;
+  --doc-max:820px;
+}
+body{font-family:'Inter',sans-serif;background:var(--page-bg);color:var(--text-dark);display:flex;min-height:100vh;font-size:14px;line-height:1.55}
+
+/* ══ SIDEBAR ══ */
+.sidebar{width:var(--sidebar-expanded);background:var(--sidebar-blue);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:width var(--transition);overflow:visible}
+.sidebar.collapsed{width:var(--sidebar-collapsed)}
+.sidebar-logo{height:var(--topbar-h);display:flex;align-items:center;padding:0 0 0 16px;border-bottom:1px solid rgba(255,255,255,0.12);flex-shrink:0;gap:9px;overflow:hidden;white-space:nowrap}
+.logo-mark{width:24px;height:24px;flex-shrink:0;background:#f6a623;clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+.logo-text{font-size:18px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;transition:opacity var(--transition)}
+.sidebar.collapsed .logo-text{opacity:0;pointer-events:none}
+.toggle-btn{margin-left:auto;flex-shrink:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.75);border-radius:4px;transition:background .14s}
+.toggle-btn:hover{background:var(--sidebar-hover);color:#fff}
+.toggle-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.sidebar-nav{flex:1;padding:8px 0 16px;overflow-y:auto;overflow-x:visible}
+.sidebar-nav::-webkit-scrollbar{width:0}
+.nav-group-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--nav-muted);padding:12px 20px 4px;white-space:nowrap;overflow:hidden;transition:opacity var(--transition),max-height var(--transition),padding var(--transition)}
+.sidebar.collapsed .nav-group-label{opacity:0;max-height:0;padding-top:0;padding-bottom:0;overflow:hidden}
+.nav-divider{height:1px;background:rgba(255,255,255,0.1);margin:4px 14px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;color:rgba(255,255,255,0.85);font-size:13px;font-weight:500;cursor:pointer;transition:background .14s,color .14s,padding var(--transition);position:relative;user-select:none;white-space:nowrap}
+.sidebar.collapsed .nav-item{padding:11px 0;justify-content:center;gap:0}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item.active{background:var(--sidebar-active);color:#fff;font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:0;top:7px;bottom:7px;width:3px;background:white;border-radius:0 3px 3px 0}
+.nav-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.nav-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav-label{flex:1;overflow:hidden;transition:opacity var(--transition)}
+.sidebar.collapsed .nav-label{opacity:0;width:0;flex:0}
+.nav-badge{flex-shrink:0;background:var(--danger);color:white;font-size:10px;font-weight:700;min-width:18px;height:18px;padding:0 5px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:opacity var(--transition)}
+.sidebar.collapsed .nav-badge{opacity:0;width:0;padding:0;min-width:0;overflow:hidden}
+.nav-tooltip{position:absolute;left:calc(var(--sidebar-collapsed) + 10px);top:50%;transform:translateY(-50%);background:#1a2332;color:white;font-size:12px;font-weight:500;padding:5px 10px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999}
+.nav-tooltip::before{content:'';position:absolute;right:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#1a2332}
+.sidebar.collapsed .nav-item:hover .nav-tooltip{opacity:1}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar-expanded);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left var(--transition)}
+body.sidebar-collapsed .main{margin-left:var(--sidebar-collapsed)}
+
+/* ══ TOPBAR ══ */
+.topbar{background:white;border-bottom:1px solid var(--border);height:var(--topbar-h);display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:50;flex-shrink:0}
+.topbar-title{font-size:18px;font-weight:700;color:var(--text-dark);white-space:nowrap}
+.topbar-help{width:22px;height:22px;border:1.5px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+.search-wrap{flex:1;max-width:500px;display:flex;align-items:center;border:1.5px solid var(--border);border-radius:4px;overflow:hidden;background:white}
+.search-wrap input{flex:1;padding:9px 14px;border:none;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text-dark);outline:none}
+.search-wrap input::placeholder{color:var(--text-light)}
+.search-btn{background:var(--blue);border:none;padding:0 16px;height:38px;display:flex;align-items:center;cursor:pointer;flex-shrink:0}
+.search-btn svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2.2;stroke-linecap:round}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.topbar-user{display:flex;align-items:center;gap:9px;cursor:pointer}
+.user-avatar{width:34px;height:34px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700}
+.user-name{font-size:13px;font-weight:600;color:var(--text-dark)}
+.notif-btn{position:relative;cursor:pointer;display:flex;align-items:center}
+.notif-btn svg{width:20px;height:20px;stroke:var(--text-mid);fill:none;stroke-width:1.7;stroke-linecap:round}
+.notif-count{position:absolute;top:-4px;right:-6px;background:var(--danger);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1.5px solid white;padding:0 3px}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .13s;white-space:nowrap;border:1.5px solid transparent}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-sm{padding:7px 14px;font-size:13px}
+.btn-icon{padding:8px 10px}
+.btn-ghost{background:white;border-color:var(--blue-border);color:var(--blue)}
+.btn-ghost:hover{background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark)}
+.btn-ghost svg{stroke:var(--blue)}
+.btn-danger{background:white;border-color:var(--blue-border);color:var(--blue)}
+.btn-danger:hover{background:var(--blue-bg);border-color:var(--blue)}
+.btn-danger svg{stroke:var(--blue)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:white}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-primary svg{stroke:white}
+.btn-primary:disabled{background:#a0aec0;border-color:#a0aec0;cursor:default}
+/* Tooltip */
+.tip{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.tip-label{
+  position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:#1a2332;color:white;font-size:11.5px;font-weight:500;font-family:'Inter',sans-serif;
+  padding:5px 10px;border-radius:5px;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .15s;z-index:9998;
+}
+.tip-label::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1a2332}
+.tip:hover .tip-label{opacity:1}
+
+/* ══ CHIPS ══ */
+.chip{font-size:12px;font-weight:600;padding:4px 11px;border-radius:20px;border:1.5px solid;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.chip svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+.chip-blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.chip-gray{background:#f0f4f9;color:var(--text-mid);border-color:var(--border)}
+.chip-green{background:var(--success-bg);color:var(--success);border-color:var(--success-border)}
+.chip-orange{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-border)}
+
+/* ══════════════════════════════════════
+   VERSION B — TOP BAR (tabs)
+══════════════════════════════════════ */
+.vb-shell{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+/* Sub-bar with back + version toggle */
+.vb-subbar{
+  background:white;border-bottom:1px solid var(--border);
+  height:46px;display:flex;align-items:center;padding:0 28px;gap:12px;flex-shrink:0;
+  position:sticky;top:0;z-index:60;
+}
+.vb-back{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--blue);padding:5px 8px 5px 4px;border-radius:4px;transition:background .13s}
+.vb-back:hover{background:var(--blue-bg)}
+.vb-back svg{width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.vb-crumb-sep{color:var(--text-light);font-size:14px}
+.vb-crumb{font-size:13px;font-weight:600;color:var(--text-dark)}
+.vb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+/* version toggle removed */
+
+/* ══ DOC TABS (seller tabs) ══ */
+.doc-tabs-bar{
+  background:white;
+  display:flex;align-items:stretch;padding:0 0 0 28px;gap:0;flex-shrink:0;overflow-x:auto;
+}
+.doc-tabs-bar::-webkit-scrollbar{display:none}
+.doc-tab{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 20px;cursor:pointer;
+  border:none;background:transparent;
+  font-family:'Inter',sans-serif;
+  color:var(--text-light);border-bottom:3px solid transparent;
+  border-right:1px solid var(--border);  /* separator between tabs */
+  margin-bottom:-1px;transition:all .14s;white-space:nowrap;flex-shrink:0;
+  position:relative;text-align:left;
+  min-width:170px;
+}
+.doc-tab:first-child{border-left:1px solid var(--border)}
+.doc-tab:hover{color:var(--text-dark);background:#f7fafd}
+.doc-tab.active{
+  color:var(--blue);border-bottom-color:var(--blue);border-right-color:var(--border);
+  font-weight:600;background:white;
+}
+.doc-tab.active .doc-tab-logo{box-shadow:0 0 0 2.5px var(--blue)}
+.doc-tab-header{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.doc-tab-name{font-size:13px;font-weight:600;line-height:1.2;color:inherit}
+.doc-tab-entity{font-size:11px;color:var(--text-light);font-weight:400;line-height:1.3}
+.doc-tab.active .doc-tab-entity{color:var(--blue);opacity:.7}
+.doc-tab-logo{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;transition:box-shadow .14s}
+.doc-tab-status{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.doc-tab-meta{display:flex;flex-direction:column;min-width:0;flex:1}
+.doc-tab-actions{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 28px 0 16px;flex-shrink:0;border-left:1px solid var(--border)}
+
+/* ══ MAIN SCROLL AREA ══ */
+.vb-scroll{flex:1;overflow-y:auto;background:var(--page-bg);padding:32px 20px 60px}
+
+/* ── Doc nav layout ── */
+.doc-nav-layout{
+  display:flex;align-items:flex-start;
+  /* 40px gap each side = arrow(42px) + 40px gap + doc + 40px gap + arrow(42px) */
+  max-width:calc(var(--doc-max) + (42px + 40px) * 2);
+  margin:0 auto;
+}
+.doc-panels-wrap{flex:1;min-width:0}
+.doc-nav-arrow{
+  width:calc(42px + 40px); /* button 42px + 40px gap */
+  flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;
+  padding-top:40px;
+  align-self:flex-start;
+  position:sticky;
+  top:40px;
+}
+.dna-btn{
+  width:42px;height:42px;border-radius:50%;
+  background:white;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;
+  box-shadow:0 2px 8px rgba(26,47,80,0.08);
+}
+.dna-btn svg{width:18px;height:18px;stroke:var(--text-mid);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s}
+.dna-btn:hover{background:var(--blue);border-color:var(--blue);box-shadow:0 4px 14px rgba(26,111,196,0.3)}
+.dna-btn:hover svg{stroke:white}
+.dna-btn.disabled{opacity:0.25;cursor:default;pointer-events:none}
+.dna-hint{
+  margin-top:8px;font-size:10px;font-weight:600;color:var(--text-light);
+  text-align:center;max-width:62px;line-height:1.3;letter-spacing:.2px;
+}
+
+/* ══ DOC PANEL ══ */
+.doc-panel{display:none}
+.doc-panel.active{display:block;animation:docIn .2s ease}
+@keyframes docIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ══════════════════════════════════════
+   PRINTABLE DOCUMENT CARD
+══════════════════════════════════════ */
+.doc-card{
+  max-width:var(--doc-max);margin:0 auto;
+  background:white;
+  border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 4px 24px rgba(26,47,80,0.10);
+  overflow:hidden;
+}
+
+/* Document letterhead */
+.doc-letterhead{
+  background:var(--blue);
+  padding:28px 36px 24px;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+}
+.doc-lh-left{}
+.doc-lh-vuulr{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.doc-lh-logo-mark{width:28px;height:28px;background:#f6a623;clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+.doc-lh-logo-text{font-size:20px;font-weight:700;color:white;letter-spacing:1px;text-transform:uppercase}
+.doc-lh-title{font-size:24px;font-weight:700;color:white;letter-spacing:-.3px;margin-bottom:4px}
+.doc-lh-subtitle{font-size:13px;color:rgba(255,255,255,.75);letter-spacing:.2px}
+.doc-lh-right{text-align:right;flex-shrink:0}
+.doc-lh-memoid{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.6);margin-bottom:4px}
+.doc-lh-memoid-val{font-size:15px;font-weight:700;color:white;font-family:'Courier New',monospace;margin-bottom:14px}
+.doc-lh-status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);
+  border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:white;
+}
+.doc-lh-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* Meta strip below letterhead */
+.doc-meta-strip{
+  display:flex;border-bottom:1px solid var(--border);
+  background:#fafbfd;
+}
+.doc-meta-cell{
+  flex:1;padding:14px 22px;border-right:1px solid var(--border);
+}
+.doc-meta-cell:last-child{border-right:none}
+.dmc-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;color:var(--text-light);margin-bottom:5px}
+.dmc-val{font-size:13.5px;font-weight:600;color:var(--text-dark)}
+
+/* Doc section */
+.doc-section{padding:24px 36px;border-bottom:1px solid var(--border)}
+.doc-section:last-child{border-bottom:none}
+.doc-section-title{
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--blue);margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;
+}
+.doc-section-title::after{content:'';flex:1;height:1px;background:var(--blue-border)}
+
+/* Parties grid */
+.parties-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch}
+.party-col{padding:0}
+.party-role-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;color:var(--text-light);margin-bottom:8px}
+.party-name{font-size:16px;font-weight:700;color:var(--blue);margin-bottom:3px}
+.party-reg{font-size:11.5px;font-family:'Courier New',monospace;color:var(--text-light);margin-bottom:12px}
+.party-addr-line{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);margin-bottom:7px;line-height:1.4}
+.party-addr-line svg{width:13px;height:13px;stroke:var(--text-light);fill:none;stroke-width:1.7;stroke-linecap:round;flex-shrink:0}
+.parties-divider{display:flex;align-items:center;justify-content:center;padding:0 28px}
+.parties-vs{width:32px;height:32px;background:var(--blue-bg);border:1.5px solid var(--blue-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--blue)}
+
+/* Field grid */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 28px}
+.field-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 24px}
+.doc-field-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-light);margin-bottom:4px}
+.doc-field-value{font-size:13.5px;color:var(--text-dark);font-weight:500}
+.doc-field-value.accent{color:var(--blue);font-weight:700}
+.doc-field-value.lg{font-size:15px;font-weight:700}
+
+/* Inline pill tags in doc */
+.doc-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+
+/* Rights table */
+.doc-rt{width:100%;border-collapse:collapse;font-size:13px}
+.doc-rt th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-light);padding:8px 14px;border-bottom:1.5px solid var(--border);text-align:left;background:#fafbfd}
+.doc-rt td{padding:11px 14px;border-bottom:1px solid #f0f4f8;color:var(--text-dark);vertical-align:middle}
+.doc-rt tr:last-child td{border-bottom:none}
+.doc-rt tr:hover td{background:#f7fafd}
+.doc-rt tr.unavail-row td{color:var(--text-light);background:#fefafa}
+.rt-excl{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
+.rt-nexcl{background:#faf5ff;color:#553c9a;border:1px solid #d6bcfa;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
+.rt-unavail-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--danger);font-weight:600}
+.rt-unavail-badge svg{width:13px;height:13px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round}
+
+/* Languages doc table */
+.doc-lang-section-hd{font-size:12.5px;font-weight:700;color:var(--text-dark);margin-bottom:8px;margin-top:14px}
+.doc-lang-section-hd:first-child{margin-top:0}
+.doc-lt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.doc-lt col.col-t{width:35%}.doc-lt col.col-l{width:38%}.doc-lt col.col-p{width:27%}
+.doc-lt th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light);padding:7px 14px;border-bottom:1px solid var(--border);text-align:left;background:#fafbfd}
+.doc-lt td{padding:9px 14px;border-bottom:1px solid #f0f4f8;color:var(--text-dark)}
+.doc-lt tr:last-child td{border-bottom:none}
+
+/* Programs list */
+.doc-programs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.doc-program-pill{
+  background:var(--page-bg);border:1px solid var(--border);
+  border-radius:5px;padding:7px 11px;font-size:12.5px;color:var(--text-dark);
+  font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Fee row */
+.doc-fee-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--blue-bg);border:1.5px solid var(--blue-border);
+  border-radius:7px;padding:14px 20px;
+}
+.doc-fee-label{font-size:14px;font-weight:600;color:#1a365d}
+.doc-fee-amt{font-size:22px;font-weight:700;color:var(--blue);letter-spacing:-.5px}
+
+/* Signature block */
+.doc-sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.doc-sig-block{border:1.5px dashed var(--border);border-radius:7px;padding:20px 22px}
+.doc-sig-block.signed-state{border:1.5px solid var(--success-border);background:var(--success-bg)}
+.doc-sig-role{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.65px;color:var(--text-light);margin-bottom:6px}
+.doc-sig-name{font-size:15px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.doc-sig-reg{font-size:11.5px;font-family:'Courier New',monospace;color:var(--text-light);margin-bottom:16px}
+.doc-sig-line{height:1px;background:var(--border);margin:16px 0 8px}
+.doc-sig-line-label{font-size:11px;color:var(--text-light)}
+.doc-sig-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:11px;background:var(--blue);border:none;border-radius:6px;
+  color:white;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;
+  cursor:pointer;transition:background .13s;margin-top:14px;
+}
+.doc-sig-btn:hover{background:var(--blue-dark)}
+.doc-sig-btn.done{background:var(--success);cursor:default}
+.doc-sig-btn.done:hover{background:var(--success)}
+.doc-sig-btn svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round}
+.doc-sig-done-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--success);margin-top:12px}
+
+/* Waiting state */
+.doc-waiting-block{
+  display:flex;align-items:center;gap:12px;
+  background:var(--page-bg);border:1px solid var(--border);
+  border-radius:7px;padding:16px 20px;
+}
+.doc-waiting-block svg{width:18px;height:18px;stroke:var(--text-light);fill:none;stroke-width:1.7;stroke-linecap:round;flex-shrink:0}
+.doc-waiting-txt{font-size:13px;color:var(--text-light)}
+
+/* Watermark for non-accepted */
+.doc-watermark-bar{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:repeating-linear-gradient(
+    -45deg,#fffaf0,#fffaf0 10px,#fff9ec 10px,#fff9ec 20px
+  );
+  border-top:1px solid var(--warn-border);border-bottom:1px solid var(--warn-border);
+  padding:10px 20px;font-size:13px;font-weight:600;color:var(--warn);
+}
+.doc-watermark-bar svg{width:15px;height:15px;stroke:var(--warn);fill:none;stroke-width:2;stroke-linecap:round}
+
+/* Print footer */
+.doc-print-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#fafbfd;border-top:1px solid var(--border);
+  padding:14px 36px;font-size:11.5px;color:var(--text-light);
+}
+.doc-print-footer strong{color:var(--text-mid)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a2332;color:white;padding:13px 20px;border-radius:var(--r);font-size:13.5px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,0.2);z-index:999;transform:translateY(70px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* Modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(10,20,45,0.52);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-ov.open{display:flex}
+.modal-box{background:white;border-radius:8px;width:460px;max-width:96vw;padding:28px;box-shadow:0 20px 60px rgba(10,20,60,0.28);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.modal-title{font-size:17px;font-weight:700;color:var(--text-dark);margin-bottom:10px}
+.modal-body{font-size:13.5px;color:var(--text-mid);line-height:1.65;margin-bottom:24px}
+.modal-seller{color:var(--blue);font-weight:700}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px}
+.mbtn-cancel{padding:10px 20px;border:1.5px solid var(--border);border-radius:var(--r);background:white;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--text-mid)}
+.mbtn-confirm{padding:10px 22px;background:var(--blue);border:none;border-radius:var(--r);color:white;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .13s}
+.mbtn-confirm:hover{background:var(--blue-dark)}
+.mbtn-confirm svg{width:13px;height:13px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round}
+
+@media print {
+  .sidebar,.topbar,.vb-subbar,.doc-tabs-bar,.vb-version-toggle,.doc-sig-btn,
+  .toast,.modal-ov{display:none!important}
+  body{background:white!important}
+  .main{margin-left:0!important}
+  .doc-card{box-shadow:none!important;border:none!important;max-width:100%!important}
+  .vb-scroll{padding:0!important}
+  .doc-panel{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark"></div>
+    <span class="logo-text">vuulr</span>
+    <div class="toggle-btn" onclick="toggleSB()">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">Main</div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="nav-label">Home</span><div class="nav-tooltip">Home</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><span class="nav-label">Discover</span><div class="nav-tooltip">Discover</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><span class="nav-label">Dashboard</span><div class="nav-tooltip">Dashboard</div></div>
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">Deals</div>
+    <div class="nav-item active" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><span class="nav-label">Negotiations</span><span class="nav-badge">3</span><div class="nav-tooltip">Negotiations</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span class="nav-label">Messaging Center</span><span class="nav-badge">5</span><div class="nav-tooltip">Messaging</div></div>
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">Marketplace</div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><span class="nav-label">Content Market Live</span><div class="nav-tooltip">Market</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><span class="nav-label">Site News</span><div class="nav-tooltip">Site News</div></div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><span class="nav-label">FAQ</span><div class="nav-tooltip">FAQ</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.41 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><span class="nav-label">Contact Us</span><div class="nav-tooltip">Contact</div></div>
+    <div class="nav-item" onclick="navSet(this)"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3H8M12 3v4"/></svg></div><span class="nav-label">Screening Rooms</span><div class="nav-tooltip">Screening</div></div>
+  </nav>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main">
+
+  <header class="topbar">
+    <span class="topbar-title">Negotiations</span>
+    <div class="topbar-help">?</div>
+    <div class="search-wrap"><input type="text" placeholder="browse titles…"/><button class="search-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button></div>
+    <div class="topbar-right">
+      <div style="position:relative;cursor:pointer;display:flex;align-items:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-mid)" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><div class="notif-count" style="background:var(--blue)">0</div></div>
+      <div class="notif-btn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-count">3</div></div>
+      <div class="topbar-user"><div class="user-avatar">VU</div><div class="user-name">[Buyer] Vuulr</div></div>
+    </div>
+  </header>
+
+  <div class="vb-shell">
+
+    <!-- Sub-bar -->
+    <div class="vb-subbar">
+      <button class="vb-back" onclick="goToOfferDetails()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Offer Details
+      </button>
+      <span class="vb-crumb-sep">/</span>
+      <span class="vb-crumb">Review Deal Memo</span>
+      <div class="vb-right">
+        <div class="tip">
+          <button class="btn btn-ghost btn-icon" onclick="window.print()"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+          <span class="tip-label">Print / Save PDF</span>
+        </div>
+        <div class="tip">
+          <button class="btn btn-ghost btn-icon" onclick="toast('Downloading all PDFs…')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          <span class="tip-label">Download All PDFs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seller Tabs -->
+    <div style="display:flex;align-items:stretch;background:white;border-bottom:1px solid var(--border);position:sticky;top:46px;z-index:55;box-shadow:0 2px 8px rgba(26,47,80,0.06)">
+      <div class="doc-tabs-bar" id="doc-tabs-bar" style="flex:1;border-bottom:none"></div>
+      <div class="doc-tab-actions">
+        <button class="btn btn-primary btn-sm" id="sign-all-btn" onclick="signAll()">
+          <svg viewBox="0 0 24 24" style="stroke:white"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          Sign All Ready
+        </button>
+      </div>
+    </div>
+
+    <!-- Document panels with prev/next arrows -->
+    <div class="vb-scroll" id="vb-scroll">
+      <div class="doc-nav-layout">
+        <!-- LEFT ARROW -->
+        <div class="doc-nav-arrow doc-nav-prev" id="nav-prev" onclick="navPrev()">
+          <div class="dna-btn" id="nav-prev-btn">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="dna-hint" id="nav-prev-hint"></div>
+        </div>
+
+        <!-- DOCUMENT -->
+        <div class="doc-panels-wrap">
+          <div id="doc-panels"></div>
+        </div>
+
+        <!-- RIGHT ARROW -->
+        <div class="doc-nav-arrow doc-nav-next" id="nav-next" onclick="navNext()">
+          <div class="dna-btn" id="nav-next-btn">
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="dna-hint" id="nav-next-hint"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGN MODAL -->
+<div class="modal-ov" id="modal">
+  <div class="modal-box">
+    <div class="modal-title">Confirm e-Signature</div>
+    <div class="modal-body">You are about to electronically sign and accept the deal memo for <span class="modal-seller" id="modal-seller-name">this seller</span>. This confirms your agreement to all terms outlined in this document.</div>
+    <div class="modal-footer">
+      <button class="mbtn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="mbtn-confirm" onclick="confirmSign()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Confirm &amp; Sign</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast-el"><span id="toast-msg"></span></div>
+
+<script>
+const SELLERS = [
+  { id:0, name:'A Pictures Intl Distribution LLC', shortName:'A Pictures Intl', entity:'Rhino Partners (RHNO 35-3454)',
+    reg:'Reg. APICT-35-3454', init:'AP', bg:'#eee5ff', col:'#553c9a',
+    listings:10, fee:350, status:'accepted', signed:false,
+    addr:'10 Raffles Place, Singapore 048583', email:'contactus@apicture.com', phone:'+65 0000 6565',
+    programs:['Pommi Aunty','Sherazade','The Lion Queen','Running Man','Shehzade S2','Shehzade S3','Pommi Aunty S3','Lion Queen: Special','Pommi Aunty S4','Sherazade S2'],
+    audio:[{title:"Me vs Mami's", lang:'Bahasa Indonesian'},{title:"Kehne Ko Humsafar Hain: S1's",lang:'Hindi'}],
+    subs:[{title:"Me vs Mami's",lang:'Danish'},{title:"Kehne Ko Humsafar Hain: S1's",lang:'Danish'}],
+    terr:['UK','APAC','ANZ','LATAM'], channels:['BFCTV','Channel9','Max YouTube'],
+    rights:[
+      {type:'Free to Air – Terrestrial/Broadcast TV',excl:'Exclusive',holdback:'—',runs:'Unlimited'},
+      {type:'S-VOD',excl:'Non-Exclusive',holdback:'1 month',runs:'Unlimited'},
+      {type:'FAST',excl:'Exclusive',holdback:'—',runs:'Unlimited'},
+    ],
+    customTerms:'S-VOD rights have a 1-month holdback from terrestrial broadcast date.',
+    deliveryDate:'To be agreed in custom terms', paymentTerms:'Upon Signature',
+    materialCosts:'Included in Offer', withholdingTax:'Responsibility of Seller',
+  },
+  { id:1, name:'Take That Television', shortName:'Take That TV', entity:'Take That Television (APIC 222)',
+    reg:'Reg. TTV-00-1122', init:'TT', bg:'#fffaf0', col:'#b7791f',
+    listings:5, fee:350, status:'accepted', signed:false,
+    addr:'22 Media Lane, London EC1A 1BB', email:'deals@takethat.tv', phone:'+44 20 7000 1234',
+    programs:['Primetime Series 1','Primetime Series 2','Evening Show S3','Night Drama','Weekend Special'],
+    audio:[{title:'Primetime Series 1',lang:'English'},{title:'Evening Show S3',lang:'English'}],
+    subs:[],
+    terr:['UK','ANZ'], channels:['BFCTV','Max YouTube'],
+    rights:[
+      {type:'Free to Air – Terrestrial/Broadcast TV',excl:'Exclusive',holdback:'—',runs:'Unlimited'},
+      {type:'TV – Digital',excl:'Exclusive',holdback:'—',runs:'Unlimited'},
+    ],
+    customTerms:'Delivery required within 30 days of signing.',
+    deliveryDate:'Within 30 days of signing', paymentTerms:'Upon Signature',
+    materialCosts:'Included in Offer', withholdingTax:'Responsibility of Seller',
+  },
+  { id:2, name:'Curious Films', shortName:'Curious Films', entity:'Rhino Partners (RHNO 35-3454)',
+    reg:'Reg. CF-44-9900', init:'CF', bg:'#e3f0fb', col:'#1a6fc4',
+    listings:2, fee:350, status:'waiting', signed:false,
+    addr:'14 Ponsonby Rd, Auckland 1011', email:'licensing@curiousfilms.nz', phone:'+64 9 000 1234',
+    programs:['Me vs Mami','Bodlicious S1'],
+    audio:[{title:"Me vs Mami's",lang:'Bahasa Indonesian'}],
+    subs:[{title:"Me vs Mami's",lang:'Danish'}],
+    terr:['UK','APAC','ANZ','LATAM'], channels:['Channel9'],
+    rights:[
+      {type:'Free to Air – Terrestrial/Broadcast TV',excl:'Exclusive',holdback:'—',runs:'Unlimited'},
+      {type:'S-VOD',excl:'Non-Exclusive',holdback:'1 month',runs:'Unlimited'},
+    ],
+    customTerms:null,
+    deliveryDate:'To be agreed in custom terms', paymentTerms:'Upon Signature',
+    materialCosts:'Included in Offer', withholdingTax:'Responsibility of Seller',
+  },
+  { id:3, name:'Pictre Inc.', shortName:'Pictre Inc.', entity:'A Picture Inc (APIC 222)',
+    reg:'Reg. APIC-35-3454', init:'PI', bg:'#f0fff4', col:'#276749',
+    listings:5, fee:350, status:'waiting', signed:false,
+    addr:'Level 5, 1 O\'Connell St, Sydney NSW 2000', email:'deals@pictre.com', phone:'+61 2 9000 1234',
+    programs:['Shehzade','Best of Season','Summer Collection S1','Rooftop Drama','City Lights'],
+    audio:[{title:'Shehzade',lang:'Original'}],
+    subs:[],
+    terr:['UK','APAC'], channels:['Channel9','Max YouTube'],
+    rights:[
+      {type:'Free to Air – Terrestrial/Broadcast TV',excl:'Exclusive',holdback:'—',runs:'Unlimited'},
+    ],
+    customTerms:null,
+    deliveryDate:'To be agreed in custom terms', paymentTerms:'Upon Signature',
+    materialCosts:'Included in Offer', withholdingTax:'Responsibility of Seller',
+  }
+];
+
+let pendingSignId = -1, toastTimer, activeTab = 0;
+
+/* ── NAVIGATION ── */
+function goToOfferDetails(){
+  // Try calling parent frame or same-page function
+  if(typeof goToOffer === 'function') { goToOffer(); return; }
+  // Try window.opener (opened in new window)
+  if(window.opener && typeof window.opener.goToOffer === 'function') { window.opener.goToOffer(); window.close(); return; }
+  // Post message to any parent
+  window.parent.postMessage({vuulrAction:'goToOffer'},'*');
+  // Fallback: go back
+  if(history.length > 1) history.back();
+  else toast('Navigate to Offer Details page');
+}
+
+/* ── STATUS HELPERS ── */
+function statusDotColor(s){ return (s.status==='accepted'||s.signed) ? '#276749' : '#f6c000'; }
+function statusText(s){
+  if(s.signed) return 'Fully Executed';
+  if(s.status==='accepted') return 'Awaiting Buyer Signature';
+  return 'Awaiting Seller Response';
+}
+function statusPillClass(s){
+  if(s.signed) return 'chip-green';
+  if(s.status==='accepted') return 'chip-orange';
+  return 'chip-gray';
+}
+
+/* ── RENDER TABS ── */
+function renderTabs(){
+  const bar = document.getElementById('doc-tabs-bar');
+  bar.innerHTML = SELLERS.map((s,i) => {
+    const dc = statusDotColor(s);
+    const stText = s.signed ? 'Signed' : s.status==='accepted' ? 'Ready to Sign' : 'Awaiting';
+    return `<button class="doc-tab ${activeTab===i?'active':''}" onclick="switchTab(${i})">
+      <div class="doc-tab-logo" style="background:${s.bg};color:${s.col}">${s.init}</div>
+      <div class="doc-tab-meta">
+        <div class="doc-tab-header">
+          <span class="doc-tab-status" style="background:${dc}"></span>
+          <span class="doc-tab-name">${s.shortName}</span>
+        </div>
+        <span class="doc-tab-entity">${s.listings} listings · ${stText}</span>
+      </div>
+    </button>`;
+  }).join('');
+
+  // Update Sign All button
+  const rdy = SELLERS.filter(s=>s.status==='accepted'&&!s.signed).length;
+  const btn = document.getElementById('sign-all-btn');
+  if(rdy===0){ btn.innerHTML='✓ All Memos Signed'; btn.disabled=true; }
+  else{ btn.innerHTML=`<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Sign All ${rdy} Ready`; btn.disabled=false; }
+}
+
+/* ── RENDER DOCUMENT ── */
+function renderDocument(s){
+  const accepted = s.status==='accepted';
+  const statusClass = statusPillClass(s);
+  const today = '24 Apr 2026';
+
+  // Watermark bar for waiting sellers
+  const waitBar = !accepted ? `
+    <div class="doc-watermark-bar">
+      <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Awaiting seller acceptance — terms shown are proposed, not yet binding
+    </div>` : '';
+
+  // Rights table rows
+  const rightsRows = s.rights.map(r => `
+    <tr>
+      <td>${r.type}</td>
+      <td><span class="${r.excl==='Exclusive'?'rt-excl':'rt-nexcl'}">${r.excl}</span></td>
+      <td>${r.holdback}</td>
+      <td>${r.runs}</td>
+    </tr>`).join('');
+
+  // Audio table
+  const audioRows = s.audio.length ? s.audio.map(a =>
+    `<tr><td style="color:var(--text-mid)">${a.title}</td><td style="font-weight:600">${a.lang}</td><td>Seller</td></tr>`
+  ).join('') : `<tr><td colspan="3" style="color:var(--text-light);text-align:center;padding:12px">No specific audio language terms</td></tr>`;
+
+  // Subtitle table
+  const subRows = s.subs.length ? s.subs.map(a =>
+    `<tr><td style="color:var(--text-mid)">${a.title}</td><td style="font-weight:600">${a.lang}</td><td>Seller</td></tr>`
+  ).join('') : `<tr><td colspan="3" style="color:var(--text-light);text-align:center;padding:12px">No subtitle requirements</td></tr>`;
+
+  // Programs
+  const progs = s.programs.map(p => `<div class="doc-program-pill">${p}</div>`).join('');
+
+  // Signature section
+  let sellerSigBlock = '';
+  if(accepted){
+    sellerSigBlock = `
+      <div class="doc-sig-block signed-state">
+        <div class="doc-sig-role">Licensor (Seller)</div>
+        <div class="doc-sig-name">${s.name}</div>
+        <div class="doc-sig-reg">${s.reg}</div>
+        <div class="doc-sig-line"></div>
+        <div class="doc-sig-line-label">Signed electronically</div>
+        <div class="doc-sig-done-label">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--success);fill:none;stroke-width:2.5;stroke-linecap:round"><polyline points="20 6 9 17 4 12"/></svg>
+          eSigned by ${s.shortName} on ${today}
+        </div>
+      </div>`;
+  } else {
+    sellerSigBlock = `
+      <div class="doc-sig-block">
+        <div class="doc-sig-role">Licensor (Seller)</div>
+        <div class="doc-sig-name">${s.name}</div>
+        <div class="doc-sig-reg">${s.reg}</div>
+        <div class="doc-sig-line"></div>
+        <div class="doc-sig-line-label">Pending seller acceptance</div>
+        <div style="margin-top:12px;font-size:12.5px;color:var(--text-light);display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--text-light);fill:none;stroke-width:2;stroke-linecap:round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Awaiting seller response
+        </div>
+      </div>`;
+  }
+
+  let buyerSigBlock = '';
+  if(s.signed){
+    buyerSigBlock = `
+      <div class="doc-sig-block signed-state">
+        <div class="doc-sig-role">Licensee (Buyer)</div>
+        <div class="doc-sig-name">Vuulr</div>
+        <div class="doc-sig-reg">Reg. VUULR-35-3454</div>
+        <div class="doc-sig-line"></div>
+        <div class="doc-sig-line-label">Signed electronically</div>
+        <div class="doc-sig-done-label">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--success);fill:none;stroke-width:2.5;stroke-linecap:round"><polyline points="20 6 9 17 4 12"/></svg>
+          eSigned by Vuulr on ${today}
+        </div>
+      </div>`;
+  } else if(accepted){
+    buyerSigBlock = `
+      <div class="doc-sig-block">
+        <div class="doc-sig-role">Licensee (Buyer)</div>
+        <div class="doc-sig-name">Vuulr</div>
+        <div class="doc-sig-reg">Reg. VUULR-35-3454</div>
+        <div class="doc-sig-line"></div>
+        <div class="doc-sig-line-label">Signature required</div>
+        <button class="doc-sig-btn" id="sig-btn-${s.id}" onclick="openModal(${s.id})">
+          <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          Accept &amp; eSign
+        </button>
+      </div>`;
+  } else {
+    buyerSigBlock = `
+      <div class="doc-sig-block">
+        <div class="doc-sig-role">Licensee (Buyer)</div>
+        <div class="doc-sig-name">Vuulr</div>
+        <div class="doc-sig-reg">Reg. VUULR-35-3454</div>
+        <div class="doc-sig-line"></div>
+        <div class="doc-sig-line-label">Locked — awaiting seller</div>
+        <div style="margin-top:12px;font-size:12.5px;color:var(--text-light);display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--text-light);fill:none;stroke-width:2;stroke-linecap:round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Available once seller accepts
+        </div>
+      </div>`;
+  }
+
+  return `
+  <div class="doc-card">
+    ${waitBar}
+
+    <!-- LETTERHEAD -->
+    <div class="doc-letterhead">
+      <div class="doc-lh-left">
+        <div class="doc-lh-vuulr">
+          <div class="doc-lh-logo-mark"></div>
+          <span class="doc-lh-logo-text">vuulr</span>
+        </div>
+        <div class="doc-lh-title">Deal Memo</div>
+        <div class="doc-lh-subtitle">Licensing Agreement Summary · Fast Bundle</div>
+      </div>
+      <div class="doc-lh-right">
+        <div class="doc-lh-memoid">Deal Memo No.</div>
+        <div class="doc-lh-memoid-val">303604-6 / ${s.id+1}</div>
+        <div class="doc-lh-status-pill">
+          <span class="doc-lh-status-dot" style="background:${statusDotColor(s)}"></span>
+          ${statusText(s)}
+        </div>
+      </div>
+    </div>
+
+    <!-- META STRIP -->
+    <div class="doc-meta-strip">
+      <div class="doc-meta-cell"><div class="dmc-lbl">Date of Offer</div><div class="dmc-val">20 Mar 2026</div></div>
+      <div class="doc-meta-cell"><div class="dmc-lbl">Date of Memo</div><div class="dmc-val">${today}</div></div>
+      <div class="doc-meta-cell"><div class="dmc-lbl">License Period</div><div class="dmc-val">23 Apr 2026 – 22 Apr 2028</div></div>
+      <div class="doc-meta-cell"><div class="dmc-lbl">Payment Terms</div><div class="dmc-val">${s.paymentTerms}</div></div>
+    </div>
+
+    <!-- SECTION 1: PARTIES -->
+    <div class="doc-section">
+      <div class="doc-section-title">1 · Parties</div>
+      <div class="parties-grid">
+        <div class="party-col">
+          <div class="party-role-label">Licensor (Seller)</div>
+          <div class="party-name">${s.name}</div>
+          <div class="party-reg">${s.reg}</div>
+          <div class="party-addr-line"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${s.addr}</div>
+          <div class="party-addr-line"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${s.email}</div>
+          <div class="party-addr-line"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.41 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${s.phone}</div>
+        </div>
+        <div class="parties-divider"><div class="parties-vs">vs</div></div>
+        <div class="party-col">
+          <div class="party-role-label">Licensee (Buyer)</div>
+          <div class="party-name">Vuulr</div>
+          <div class="party-reg">Reg. VUULR-35-3454</div>
+          <div class="party-addr-line"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>1 One North, Singapore 138527</div>
+          <div class="party-addr-line"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>contactus@vuulr.com</div>
+          <div class="party-addr-line"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12.4a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.41 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>+65 8181 8181</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: LICENSE SCOPE -->
+    <div class="doc-section">
+      <div class="doc-section-title">2 · License Scope</div>
+      <div class="field-grid" style="margin-bottom:16px">
+        <div>
+          <div class="doc-field-label">License Period</div>
+          <div class="doc-field-value lg">23 Apr 2026 – 22 Apr 2028</div>
+        </div>
+        <div>
+          <div class="doc-field-label">Delivery Date</div>
+          <div class="doc-field-value">${s.deliveryDate}</div>
+        </div>
+        <div>
+          <div class="doc-field-label">Licensed Territories</div>
+          <div class="doc-pills">${s.terr.map(t=>`<span class="chip chip-gray">${t}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div class="doc-field-label">Channels / Platforms</div>
+          <div class="doc-pills">${s.channels.map(c=>`<span class="chip chip-blue">${c}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div class="doc-field-label">Material Costs</div>
+          <div class="doc-field-value">${s.materialCosts}</div>
+        </div>
+        <div>
+          <div class="doc-field-label">Withholding Tax</div>
+          <div class="doc-field-value">${s.withholdingTax}</div>
+        </div>
+      </div>
+      ${s.customTerms ? `
+      <div style="background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:6px;padding:12px 16px;font-size:13px;color:#7b4f12;display:flex;align-items:flex-start;gap:9px">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#b7791f;fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div><strong>Custom Term:</strong> ${s.customTerms}</div>
+      </div>` : ''}
+    </div>
+
+    <!-- SECTION 3: LICENSED PROGRAMS -->
+    <div class="doc-section">
+      <div class="doc-section-title">3 · Licensed Programs (${s.listings})</div>
+      <div class="doc-programs-grid">${progs}</div>
+    </div>
+
+    <!-- SECTION 4: LANGUAGES -->
+    <div class="doc-section">
+      <div class="doc-section-title">4 · Languages</div>
+      <div class="doc-lang-section-hd">Original Audio Languages</div>
+      <table class="doc-lt"><colgroup><col class="col-t"/><col class="col-l"/><col class="col-p"/></colgroup>
+        <thead><tr><th>Title</th><th>Licensed primary audio language(s)</th><th>Provided by</th></tr></thead>
+        <tbody>${audioRows}</tbody>
+      </table>
+      <div class="doc-lang-section-hd">Subtitles</div>
+      <table class="doc-lt"><colgroup><col class="col-t"/><col class="col-l"/><col class="col-p"/></colgroup>
+        <thead><tr><th>Title</th><th>Licensed primary subtitle(s)</th><th>Provided by</th></tr></thead>
+        <tbody>${subRows}</tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 5: RIGHTS & COMMERCIALS -->
+    <div class="doc-section">
+      <div class="doc-section-title">5 · Rights &amp; Commercials</div>
+      <table class="doc-rt">
+        <thead><tr><th>License Type</th><th>Exclusivity</th><th>Holdback</th><th>Runs</th></tr></thead>
+        <tbody>${rightsRows}</tbody>
+      </table>
+    </div>
+
+    <!-- SECTION 6: PAYMENT TERMS -->
+    <div class="doc-section">
+      <div class="doc-section-title">6 · Payment Terms</div>
+      <div class="field-grid-3" style="margin-bottom:16px">
+        <div><div class="doc-field-label">Payment Terms</div><div class="doc-field-value">${s.paymentTerms}</div></div>
+        <div><div class="doc-field-label">Material &amp; Delivery Costs</div><div class="doc-field-value">${s.materialCosts}</div></div>
+        <div><div class="doc-field-label">Withholding Taxes</div><div class="doc-field-value">${s.withholdingTax}</div></div>
+      </div>
+      <div class="doc-fee-row">
+        <div class="doc-fee-label">License Fee for this Seller — Entire Bundle, Full License Period</div>
+        <div class="doc-fee-amt">USD ${s.fee}</div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: SIGNATURES -->
+    <div class="doc-section">
+      <div class="doc-section-title">7 · Acceptance &amp; Signatures</div>
+      <div class="doc-sig-grid">
+        ${sellerSigBlock}
+        ${buyerSigBlock}
+      </div>
+    </div>
+
+    <!-- PRINT FOOTER -->
+    <div class="doc-print-footer">
+      <span>Deal Memo No. <strong>303604-6 / ${s.id+1}</strong> · Vuulr Platform · Generated ${today}</span>
+      <span>This document is subject to Vuulr's Standard Terms &amp; Conditions</span>
+    </div>
+  </div>`;
+}
+
+/* ── RENDER ALL PANELS ── */
+function renderAll(){
+  renderTabs();
+  document.getElementById('doc-panels').innerHTML = SELLERS.map((s,i) =>
+    `<div class="doc-panel ${activeTab===i?'active':''}" id="doc-panel-${i}">${renderDocument(s)}</div>`
+  ).join('');
+}
+
+function navPrev(){
+  if(activeTab > 0) switchTab(activeTab-1);
+}
+function navNext(){
+  if(activeTab < SELLERS.length-1) switchTab(activeTab+1);
+}
+function updateNavArrows(){
+  const prevBtn = document.getElementById('nav-prev-btn');
+  const nextBtn = document.getElementById('nav-next-btn');
+  const prevHint = document.getElementById('nav-prev-hint');
+  const nextHint = document.getElementById('nav-next-hint');
+  if(prevBtn){
+    if(activeTab===0) prevBtn.classList.add('disabled');
+    else { prevBtn.classList.remove('disabled'); prevHint.textContent=SELLERS[activeTab-1]?.shortName||''; }
+    prevHint.textContent = activeTab>0 ? SELLERS[activeTab-1].shortName : '';
+  }
+  if(nextBtn){
+    if(activeTab===SELLERS.length-1) nextBtn.classList.add('disabled');
+    else { nextBtn.classList.remove('disabled'); }
+    nextHint.textContent = activeTab<SELLERS.length-1 ? SELLERS[activeTab+1].shortName : '';
+  }
+}
+function switchTab(i){
+  activeTab = i;
+  renderAll();
+  updateNavArrows();
+  document.getElementById('vb-scroll').scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── SIGN ── */
+function openModal(id){
+  pendingSignId = id;
+  document.getElementById('modal-seller-name').textContent = SELLERS.find(x=>x.id===id)?.name||'';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); pendingSignId=-1; }
+function confirmSign(){
+  closeModal();
+  const s = SELLERS.find(x=>x.id===pendingSignId);
+  if(s){ s.signed=true; }
+  renderAll();
+  toast('✓ Deal memo signed — '+s?.shortName);
+}
+function signAll(){
+  const rdy = SELLERS.filter(s=>s.status==='accepted'&&!s.signed);
+  if(!rdy.length) return;
+  let delay=0;
+  rdy.forEach(s=>{
+    setTimeout(()=>{ s.signed=true; renderAll(); toast('✓ Signed: '+s.shortName); }, delay);
+    delay+=700;
+  });
+}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal()});
+
+/* ── SIDEBAR / NAV ── */
+function toggleSB(){ document.getElementById('sidebar').classList.toggle('collapsed'); document.body.classList.toggle('sidebar-collapsed'); }
+function navSet(el){ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+
+/* ── TOAST ── */
+function toast(msg,d=2600){
+  const t=document.getElementById('toast-el');
+  document.getElementById('toast-msg').textContent=msg;
+  clearTimeout(toastTimer);t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),d);
+}
+
+/* ── INIT ── */
+renderAll();
+updateNavArrows();
+</script>
+</body>
+</html>
