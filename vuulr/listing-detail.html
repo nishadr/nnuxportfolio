@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Listings — The Ghan</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── TOKENS ─────────────────────────────────── */
+:root {
+  --sb-w: 240px;
+  --sb-cw: 64px;
+  --sb-bg: #1558C8;
+  --sb-hover: rgba(255,255,255,0.10);
+  --sb-active: rgba(255,255,255,0.18);
+  --sb-text: rgba(255,255,255,0.90);
+  --sb-muted: rgba(255,255,255,0.48);
+  --blue: #2563EB;
+  --blue-dk: #1D4ED8;
+  --text-1: #111827;
+  --text-2: #6B7280;
+  --text-3: #9CA3AF;
+  --border: #E5E7EB;
+  --bg: #F3F4F6;
+  --white: #ffffff;
+  --topbar-h: 64px;
+  --panel-w: 304px;
+  --content-pad: 60px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --ease: cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── BASE ───────────────────────────────────── */
+html { font-size: 14px; }
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-1);
+  background: var(--bg);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── APP SHELL ──────────────────────────────── */
+.app { display: flex; min-height: 100vh; }
+
+/* ─── SIDEBAR ────────────────────────────────── */
+.sidebar {
+  width: var(--sb-w);
+  background: var(--sb-bg);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 300;
+  overflow: hidden;
+  transition: width 0.26s var(--ease), transform 0.26s var(--ease);
+  flex-shrink: 0;
+}
+.app.nav-collapsed .sidebar { width: var(--sb-cw); }
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.logo-text {
+  font-size: 18px; font-weight: 700; color: #fff;
+  letter-spacing: -0.02em; white-space: nowrap; overflow: hidden;
+  transition: opacity 0.2s, width 0.26s var(--ease);
+}
+.app.nav-collapsed .logo-text { opacity: 0; width: 0; pointer-events: none; }
+
+.hamburger-btn {
+  display: flex; flex-direction: column; gap: 5px;
+  cursor: pointer; padding: 7px; border-radius: 7px;
+  transition: background 0.15s; flex-shrink: 0;
+}
+.hamburger-btn:hover { background: var(--sb-hover); }
+.hamburger-btn span {
+  display: block; width: 18px; height: 2px;
+  background: rgba(255,255,255,0.8); border-radius: 2px;
+}
+.hamburger-btn.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-btn.is-open span:nth-child(2) { opacity: 0; }
+.hamburger-btn.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.hamburger-btn span { transition: transform 0.22s, opacity 0.15s; }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 4px 0 20px; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
+
+.nav-section {
+  padding: 14px 20px 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--sb-muted);
+  white-space: nowrap; overflow: hidden;
+  transition: opacity 0.2s, height 0.26s, padding 0.26s;
+}
+.app.nav-collapsed .nav-section { opacity: 0; height: 0; padding: 0; overflow: hidden; }
+
+.nav-item {
+  display: flex; align-items: center;
+  gap: 12px; padding: 11px 20px;
+  color: var(--sb-text); font-size: 14px; font-weight: 400;
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.15s, padding 0.26s var(--ease);
+  user-select: none; position: relative;
+}
+.nav-item:hover { background: var(--sb-hover); }
+.nav-item.active { background: var(--sb-active); font-weight: 600; color: #fff; }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 6px; bottom: 6px;
+  width: 3px; background: #93C5FD; border-radius: 0 2px 2px 0;
+}
+.nav-icon { flex-shrink: 0; opacity: 0.85; min-width: 18px; }
+.nav-label { transition: opacity 0.18s 0.04s; }
+.nav-chevron { margin-left: auto; opacity: 0.5; flex-shrink: 0; transition: opacity 0.18s; }
+.app.nav-collapsed .nav-label,
+.app.nav-collapsed .nav-chevron { opacity: 0; width: 0; overflow: hidden; }
+.app.nav-collapsed .nav-item { padding: 11px 0; justify-content: center; gap: 0; }
+
+/* hover tooltip in collapsed state */
+.app.nav-collapsed .nav-item::after {
+  content: attr(data-label);
+  position: absolute; left: calc(var(--sb-cw) + 10px); top: 50%;
+  transform: translateY(-50%); background: #1F2937; color: #fff;
+  font-size: 12px; font-weight: 500; padding: 5px 10px;
+  border-radius: 6px; white-space: nowrap; z-index: 999;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s;
+}
+.app.nav-collapsed .nav-item:hover::after { opacity: 1; }
+.app.nav-collapsed .nav-item::before {
+  content: ''; position: absolute;
+  left: calc(var(--sb-cw) + 4px); top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent; border-right-color: #1F2937;
+  z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.15s;
+}
+.app.nav-collapsed .nav-item:hover::before { opacity: 1; }
+
+/* mobile sidebar overlay */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45); z-index: 299;
+  opacity: 0; transition: opacity 0.26s;
+}
+.sidebar-overlay.show { opacity: 1; }
+
+/* ─── MAIN ───────────────────────────────────── */
+.main {
+  margin-left: var(--sb-w);
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+  transition: margin-left 0.26s var(--ease);
+}
+.app.nav-collapsed .main { margin-left: var(--sb-cw); }
+
+/* ─── TOPBAR ─────────────────────────────────── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px;
+  position: sticky; top: 0; z-index: 100;
+  flex-shrink: 0;
+}
+.topbar-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
+.topbar-help {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 1.5px solid var(--border); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: var(--text-3);
+  cursor: pointer; flex-shrink: 0; transition: border-color 0.15s, color 0.15s;
+}
+.topbar-help:hover { border-color: var(--blue); color: var(--blue); }
+
+.search-row {
+  flex: 1; max-width: 460px; display: flex;
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search-row:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.search-input {
+  flex: 1; height: 38px; border: none;
+  padding: 0 12px; font-size: 13px; font-family: inherit;
+  color: var(--text-1); background: var(--white); outline: none;
+}
+.search-input::placeholder { color: var(--text-3); }
+.search-btn {
+  width: 42px; height: 38px; background: var(--blue); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; transition: background 0.15s;
+}
+.search-btn:hover { background: var(--blue-dk); }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.user-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--blue); display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 700;
+  color: #fff; cursor: pointer; flex-shrink: 0;
+}
+.user-info { display: flex; flex-direction: column; line-height: 1; }
+.user-name { font-size: 13px; font-weight: 600; }
+.user-role-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  color: #6B7280; border: 1px solid var(--border);
+  border-radius: 3px; padding: 1px 4px; margin-top: 3px;
+  display: inline-block; width: fit-content;
+}
+.topbar-chevron { color: var(--text-3); cursor: pointer; }
+.icon-chip {
+  width: 34px; height: 34px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2); transition: background 0.15s;
+  position: relative;
+}
+.icon-chip:hover { background: var(--bg); }
+.notif-dot {
+  position: absolute; top: 4px; right: 4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #EF4444; color: #fff;
+  font-size: 9px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--white);
+}
+
+/* ─── HERO ───────────────────────────────────── */
+.hero {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  padding:50px;
+  Padding-top:20px;
+  Padding-left:0;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1440&q=80');
+  background-size: cover; background-position: center 40%;
+  filter: blur(16px) brightness(0.45) saturate(1.3);
+  transform: scale(1.06); transition: transform 10s ease;
+}
+.hero:hover .hero-bg { transform: scale(1.09); }
+.hero-grad { position: absolute; inset: 0; background: rgba(0,0,0,0.12); }
+
+.back-row {
+  position: relative; z-index: 2;
+  padding: 16px var(--content-pad) 0;
+}
+.back-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; color: rgba(255,255,255,0.85);
+  cursor: pointer; transition: color 0.15s;
+}
+.back-btn:hover { color: #fff; }
+.back-btn:hover .back-ic { transform: translateX(-2px); }
+.back-ic { display: flex; transition: transform 0.18s; }
+
+.hero-inner {
+  position: relative; z-index: 2;
+  display: flex; gap: 24px; align-items: flex-start;
+  padding: 16px var(--content-pad) 30px;
+}
+.poster-wrap { flex-shrink: 0; position: relative; }
+.poster {
+  width: 238px; height: 343px; border-radius: 10px;
+  object-fit: cover; display: block;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.55);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.poster:hover { transform: scale(1.03) translateY(-2px); box-shadow: 0 18px 52px rgba(0,0,0,0.7); }
+.poster-badge {
+  position: absolute; bottom: 8px; left: 8px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #16A34A; border: 2px solid rgba(255,255,255,0.85);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.hero-info { flex: 1; padding-top:12px; min-width: 0; margin-left:30px; }
+.hero-title {
+  font-size: 44px; font-weight: 800; color: #fff;
+  line-height: 1.05; letter-spacing: -0.025em; margin-bottom: 6px;
+}
+.hero-type {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.07em;
+  text-transform: uppercase; color: rgba(255,255,255,0.58);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 7px;
+}
+.hero-type-dot { color: rgba(255,255,255,0.28); font-size: 14px; }
+.hero-desc {
+  font-size: 14px; line-height: 1.62;
+  color: rgba(255,255,255,0.76); margin-bottom: 14px;
+}
+.read-more {
+  display: inline-block; padding: 1px 7px;
+  border: 1px solid rgba(255,255,255,0.45); border-radius: 4px;
+  font-size: 11.5px; font-weight: 500; color: rgba(255,255,255,0.85);
+  cursor: pointer; margin-left: 4px; vertical-align: middle;
+  transition: background 0.15s;
+}
+.read-more:hover { background: rgba(255,255,255,0.1); }
+
+.hero-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+.tag {
+  display: inline-flex; align-items: center;
+  padding: 3px 12px; border-radius: 20px;
+  border: 1.5px solid rgba(255,255,255,0.42);
+  font-size: 12.5px; color: rgba(255,255,255,0.86);
+  cursor: default; transition: background 0.15s, border-color 0.15s;
+}
+.tag:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.7); }
+
+.hero-badges { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; flex-wrap: wrap; }
+.hd-badge {
+  display: inline-flex; align-items: center;
+  border: 2px solid rgba(255,255,255,0.72); border-radius: 4px;
+  padding: 2px 6px; font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,0.9); letter-spacing: 0.05em;
+}
+.runtime-b {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 14px; color: rgba(255,255,255,0.82);
+}
+.imdb-g {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 14.5px; font-weight: 600; color: rgba(255,255,255,0.9);
+}
+.imdb-pill {
+  font-size: 10px; font-weight: 800; background: #F59E0B; color: #000;
+  padding: 2px 5px; border-radius: 3px; letter-spacing: 0.04em;
+}
+.imdb-star { color: #F59E0B; font-size: 15px; }
+.affinity-g { display: flex; flex-direction: column; align-items: flex-start; }
+.affinity-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.42); line-height: 1.2; }
+.affinity-num { font-size: 24px; font-weight: 700; color: #fff; line-height: 1; }
+.top10-badge {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.45);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; color: rgba(255,255,255,0.7);
+}
+.top10-top { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.top10-num { font-size: 15px; font-weight: 800; line-height: 1; }
+
+.hero-actions { display: flex; align-items: center; gap: 10px; }
+.btn-offer {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 0 26px; height: 50px; border-radius: 40px;
+  background: var(--blue); color: #fff;
+  font-size: 14.5px; font-weight: 600; font-family: inherit;
+  border: none; cursor: pointer;
+  transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+  white-space: nowrap; letter-spacing: -0.01em;
+}
+.btn-offer:hover { background: var(--blue-dk); box-shadow: 0 5px 20px rgba(37,99,235,0.42); transform: translateY(-1px); }
+.btn-offer:active { transform: scale(0.97); box-shadow: none; }
+.btn-offer .arrow { transition: transform 0.18s; }
+.btn-offer:hover .arrow { transform: translateX(3px); }
+
+.icon-act-btn {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: rgba(59,93,168,0.72);
+  border: 2px solid rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.88);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; backdrop-filter: blur(6px);
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  position: relative; flex-shrink: 0;
+}
+.icon-act-btn:hover { background: rgba(59,93,168,0.95); border-color: rgba(255,255,255,0.5); transform: scale(1.08); }
+.icon-act-btn:active { transform: scale(0.94); }
+
+/* ─── TOOLTIP ────────────────────────────────── */
+.tt-wrap { position: relative; display: inline-flex; }
+.tt {
+  position: absolute; bottom: calc(100% + 9px); left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #111827; color: #fff;
+  font-size: 12px; font-weight: 400; padding: 5px 11px;
+  border-radius: 6px; white-space: nowrap;
+  pointer-events: none; opacity: 0; z-index: 400;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.tt::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: #111827;
+}
+.tt-wrap:hover .tt { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── CONTENT BODY (two-column layout) ──────── */
+.content-body {
+  display: grid;
+  grid-template-columns: 1fr var(--panel-w);
+  align-items: start;
+  background: var(--white);
+}
+
+/* ─── BODY LEFT (main sections) ─────────────── */
+.body-left { min-width: 0; }
+
+/* meta strip — full width, outside the 2-col grid */
+.meta-strip {
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+}
+.meta-strip-inner {
+  display: flex; padding: 20px var(--content-pad); flex-wrap: wrap; gap: 0;
+}
+.meta-col {
+  flex: 1; min-width: 140px;
+  padding: 0 20px; border-right: 1px solid var(--border);
+}
+.meta-col:first-child { padding-left: 0; }
+.meta-col:last-child { border-right: none; }
+.meta-col-lbl { font-size: 11.5px; color: var(--text-3); margin-bottom: 4px; }
+.meta-col-val { font-size: 14px; font-weight: 600; color: var(--text-1); line-height: 1.4; }
+
+/* sections wrapper */
+.sections-wrap { padding: 24px var(--content-pad); }
+
+.section { margin-bottom: 32px; }
+.section:last-child { margin-bottom: 0; }
+.section-title {
+  font-size: 17px; font-weight: 700; letter-spacing: -0.015em;
+  color: var(--text-1); margin-bottom: 14px;
+}
+
+/* video */
+.video-thumb {
+  position: relative; border-radius: var(--radius); overflow: hidden;
+  cursor: pointer; display: block;
+  max-width:500px;
+}
+.video-thumb img {
+  width: 100%; height: 280px; object-fit: cover; display: block;
+  transition: transform 0.4s ease;
+}
+.video-thumb:hover img { transform: scale(1.02); }
+.video-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.18);
+  display: flex; align-items: flex-end; justify-content: flex-start;
+  padding: 14px 16px; transition: background 0.2s;
+}
+.video-thumb:hover .video-overlay { background: rgba(0,0,0,0.32); }
+.play-row { display: flex; align-items: center; gap: 10px; }
+.play-circle {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: transform 0.2s, background 0.15s;
+}
+.video-thumb:hover .play-circle { transform: scale(1.1); background: #fff; }
+.video-lbl { font-size: 13px; color: rgba(255,255,255,0.95); font-weight: 500; }
+
+/* photos */
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.photo-cell { border-radius: 8px; overflow: hidden; cursor: pointer; }
+.photo-cell img {
+  width: 100%; height: 140px; object-fit: cover; display: block;
+  transition: transform 0.32s;
+}
+.photo-cell:hover img { transform: scale(1.05); }
+
+/* cast */
+.cast-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.cast-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--white);
+  cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.cast-item:hover { border-color: #BFDBFE; box-shadow: 0 2px 10px rgba(37,99,235,0.1); transform: translateY(-2px); }
+.cast-av {
+  width: 40px; height: 40px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+}
+.cast-init {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.cast-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+
+/* crew */
+.crew-row {
+  display: flex; align-items: baseline;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.crew-row:last-child { border-bottom: none; }
+.crew-role { font-size: 12.5px; color: var(--text-3); width: 85px; flex-shrink: 0; }
+.crew-name { font-size: 13.5px; font-weight: 500; color: var(--text-1); }
+
+/* seller */
+.seller-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 18px; display: flex; align-items: center;
+  gap: 14px; margin-bottom: 28px;
+  background: var(--white); transition: box-shadow 0.2s;
+}
+.seller-card:hover { box-shadow: 0 3px 14px rgba(0,0,0,0.08); }
+.seller-av {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: #7C3AED; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.seller-info { flex: 1; min-width: 0; }
+.seller-by { font-size: 11px; color: var(--text-3); margin-bottom: 2px; }
+.seller-name { font-size: 13px; font-weight: 600; color: var(--blue); cursor: pointer; }
+.seller-name:hover { text-decoration: underline; }
+.seller-icons { display: flex; gap: 7px; }
+.seller-ico {
+  width: 28px; height: 28px; border: 1px solid var(--border);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  color: var(--text-3); cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.seller-ico:hover { border-color: var(--blue); color: var(--blue); background: #EFF6FF; }
+
+/* description */
+.desc-block { margin-bottom: 0; }
+.desc-block p {
+  font-size: 14px; line-height: 1.76; color: #4B5563; margin-bottom: 14px;
+}
+.desc-block p:last-child { margin-bottom: 0; }
+
+/* ─── MORE LIKE THIS ─────────────────────────── */
+.more-section {
+  padding: 24px var(--content-pad) 32px;
+  border-top: 1px solid var(--border);
+}
+.more-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 18px;
+}
+.car-nav { display: flex; gap: 8px; }
+.car-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2);
+  transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.1s;
+}
+.car-btn:hover { border-color: var(--blue); color: var(--blue); background: #EFF6FF; }
+.car-btn:active { transform: scale(0.9); }
+.car-btn:disabled { opacity: 0.3; pointer-events: none; }
+.car-viewport { overflow: hidden; }
+.car-track { display: flex; gap: 14px; transition: transform 0.34s cubic-bezier(0.25,0.8,0.25,1); }
+.listing-card { flex-shrink: 0; width: 165px; cursor: pointer; }
+.card-img-wrap { position: relative; border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
+.card-img-wrap img { width: 165px; height: 214px; object-fit: cover; display: block; transition: transform 0.34s; }
+.listing-card:hover .card-img-wrap img { transform: scale(1.04); }
+.card-hover-btns {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; gap: 5px; opacity: 0; transition: opacity 0.18s;
+}
+.listing-card:hover .card-hover-btns { opacity: 1; }
+.card-hbtn {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: rgba(255,255,255,0.93); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s, transform 0.12s;
+}
+.card-hbtn:hover { background: #fff; transform: scale(1.1); }
+.card-tt-wrap { position: relative; }
+.card-tt {
+  position: absolute; bottom: calc(100%+6px); left: 50%;
+  transform: translateX(-50%) translateY(3px);
+  background: #111827; color: #fff; font-size: 11px; padding: 4px 8px;
+  border-radius: 5px; white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity 0.14s, transform 0.14s;
+}
+.card-tt::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:#111827; }
+.card-tt-wrap:hover .card-tt { opacity:1; transform:translateX(-50%) translateY(0); }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 3px; }
+.card-year { font-size: 12px; color: var(--text-3); margin-bottom: 6px; }
+.card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.card-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-2); }
+
+/* ─── RIGHT PANEL (sticky purchase) ─────────── */
+.body-right {
+  border-left: 1px solid var(--border);
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--white);
+}
+.body-right::-webkit-scrollbar { width: 4px; }
+.body-right::-webkit-scrollbar-track { background: transparent; }
+.body-right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.panel-inner { padding: 20px 18px; }
+
+/* panel poster header */
+.panel-header {
+  position: relative; border-radius: var(--radius); overflow: hidden;
+  margin-bottom: 16px; height: 96px;
+}
+.panel-header-bg {
+  position: absolute; inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80');
+  background-size: cover; background-position: center 40%;
+  filter: blur(8px) brightness(0.46) saturate(1.2); transform: scale(1.08);
+}
+.panel-header-content {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 11px;
+  padding: 14px; height: 100%;
+}
+.panel-thumb {
+  width: 48px; height: 62px; border-radius: 6px;
+  object-fit: cover; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.panel-title-block {}
+.panel-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin-bottom: 3px; }
+.panel-subtitle { font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(255,255,255,0.58); }
+
+/* panel tags */
+.panel-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
+.panel-tag {
+  font-size: 11px; padding: 2px 8px; border-radius: 20px;
+  border: 1px solid var(--border); color: var(--text-2); background: var(--bg);
+}
+
+/* panel stats */
+.panel-stats {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  background: var(--bg); border-radius: 8px;
+  overflow: hidden; margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.p-stat {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 9px 6px; border-right: 1px solid var(--border);
+}
+.p-stat:last-child { border-right: none; }
+.p-stat-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 3px; }
+.p-stat-val { font-size: 13px; font-weight: 700; color: var(--text-1); line-height: 1; display: flex; align-items: center; gap: 2px; }
+.pstar { color: #F59E0B; font-size: 11px; }
+
+/* panel CTAs */
+.panel-cta-primary {
+  width: 100%; height: 44px; border-radius: 40px;
+  background: var(--blue); color: #fff;
+  font-size: 13.5px; font-weight: 600; font-family: inherit; border: none;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-bottom: 10px; letter-spacing: -0.01em;
+  transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+}
+.panel-cta-primary:hover { background: var(--blue-dk); box-shadow: 0 4px 16px rgba(37,99,235,0.38); transform: translateY(-1px); }
+.panel-cta-primary:active { transform: scale(0.97); box-shadow: none; }
+.panel-cta-primary .parrow { transition: transform 0.18s; }
+.panel-cta-primary:hover .parrow { transform: translateX(3px); }
+
+.panel-cta-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.panel-cta-sec {
+  flex: 1; height: 38px; border-radius: 8px; background: var(--white);
+  border: 1.5px solid var(--border); color: var(--text-2);
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 6px; transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.12s;
+}
+.panel-cta-sec:hover { border-color: var(--blue); color: var(--blue); background: #EFF6FF; transform: translateY(-1px); }
+.panel-cta-sec:active { transform: scale(0.97); }
+
+/* panel seller */
+.panel-divider { height: 1px; background: var(--border); margin-bottom: 14px; }
+.panel-seller { display: flex; align-items: center; gap: 10px; }
+.panel-seller-av {
+  width: 30px; height: 30px; border-radius: 7px;
+  background: #7C3AED; display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.panel-seller-by { font-size: 10.5px; color: var(--text-3); }
+.panel-seller-name { font-size: 12px; font-weight: 600; color: var(--blue); cursor: pointer; }
+.panel-seller-name:hover { text-decoration: underline; }
+
+/* ─── MOBILE BOTTOM BAR ──────────────────────── */
+.mobile-cta-bar {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--white); border-top: 1px solid var(--border);
+  padding: 12px 16px; gap: 10px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 200;
+  align-items: center;
+}
+.mobile-cta-bar .btn-offer { flex: 1; justify-content: center; height: 46px; font-size: 14px; }
+
+/* ─── SHARED: RIPPLE ─────────────────────────── */
+@keyframes rpl { to { transform:scale(4); opacity:0; } }
+.rh { position:relative; overflow:hidden; }
+.re {
+  position:absolute; border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  animation:rpl 0.5s linear; pointer-events:none; transform:scale(0);
+}
+
+/* ─── SHARED: FADE-IN ────────────────────────── */
+.fi { opacity:0; transform:translateY(16px); transition:opacity 0.44s ease, transform 0.44s ease; }
+.fi.vis { opacity:1; transform:translateY(0); }
+
+/* ─── OFFER MODAL ────────────────────────────── */
+.offer-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.46);
+  backdrop-filter: blur(3px);
+  z-index: 600;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.offer-backdrop.open { opacity: 1; pointer-events: all; }
+
+.offer-modal {
+  background: var(--white);
+  border-radius: 18px;
+  width: 492px; max-width: calc(100vw - 32px);
+  box-shadow: 0 28px 72px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1);
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.24s cubic-bezier(0.34,1.26,0.64,1);
+  overflow: hidden;
+}
+.offer-backdrop.open .offer-modal { transform: scale(1) translateY(0); }
+
+/* modal header */
+.om-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 20px 22px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.om-thumb {
+  width: 44px; height: 56px; border-radius: 7px;
+  object-fit: cover; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+.om-head-info { flex: 1; min-width: 0; }
+.om-head-question {
+  font-size: 15px; font-weight: 700; color: var(--text-1);
+  letter-spacing: -0.015em; margin-bottom: 3px;
+}
+.om-head-meta { font-size: 12px; color: var(--text-3); }
+.om-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2); flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-size: 16px; line-height: 1;
+}
+.om-close:hover { background: var(--bg); border-color: #9CA3AF; color: var(--text-1); }
+
+/* option rows */
+.om-options { padding: 8px 0; }
+
+.om-option {
+  display: flex; align-items: center; gap: 16px;
+  padding: 15px 22px; cursor: pointer;
+  transition: background 0.14s;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.om-option:last-child { border-bottom: none; }
+.om-option:hover { background: #F8FAFF; }
+.om-option:hover .om-opt-arrow { transform: translateX(4px); opacity: 1; }
+.om-option:active { background: #EFF6FF; }
+
+/* option icon bubble */
+.om-opt-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.om-opt-body { flex: 1; min-width: 0; }
+.om-opt-title {
+  font-size: 14px; font-weight: 700; color: var(--text-1);
+  letter-spacing: -0.01em; margin-bottom: 3px;
+}
+.om-opt-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+
+.om-opt-arrow {
+  flex-shrink: 0; color: var(--text-3);
+  opacity: 0.4; transition: transform 0.18s, opacity 0.18s;
+}
+
+/* modal footer */
+.om-foot {
+  padding: 12px 22px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 7px;
+}
+.om-foot-ic { color: var(--text-3); flex-shrink: 0; }
+.om-foot-text { font-size: 11.5px; color: var(--text-3); line-height: 1.4; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+═══════════════════════════════════════════════ */
+
+/* ── 1280px desktop ───────────────────────── */
+@media (max-width: 1280px) {
+  :root { --panel-w: 272px; }
+  .hero-title { font-size: 38px; }
+  .cast-grid { grid-template-columns: repeat(2, 1fr); }
+  .photos-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── 1024px tablet landscape ──────────────── */
+@media (max-width: 1024px) {
+  :root { --panel-w: 256px; --content-pad: 20px; }
+  .app .sidebar { width: var(--sb-cw); }
+  .app .main { margin-left: var(--sb-cw); }
+  .app .logo-text { opacity: 0; width: 0; pointer-events: none; }
+  .app .nav-label, .app .nav-chevron { opacity: 0; width: 0; overflow: hidden; }
+  .app .nav-item { padding: 11px 0; justify-content: center; gap: 0; }
+  .app .nav-section { opacity: 0; height: 0; padding: 0; }
+  .app .sidebar-top { justify-content: center; padding: 20px 0 16px; }
+  /* collapsed tooltip */
+  .app .nav-item::after {
+    content: attr(data-label); position: absolute;
+    left: calc(var(--sb-cw) + 10px); top: 50%; transform: translateY(-50%);
+    background: #1F2937; color: #fff; font-size: 12px; font-weight: 500;
+    padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+    z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  .app .nav-item:hover::after { opacity: 1; }
+  .app .nav-item::before {
+    content: ''; position: absolute; left: calc(var(--sb-cw)+4px);
+    top: 50%; transform: translateY(-50%); border: 5px solid transparent;
+    border-right-color: #1F2937; z-index:999; opacity:0; pointer-events:none; transition:opacity 0.15s;
+  }
+  .app .nav-item:hover::before { opacity:1; }
+  .hero-title { font-size: 34px; }
+  .video-thumb img { height: 240px; }
+}
+
+/* ── 768px tablet portrait ────────────────── */
+@media (max-width: 768px) {
+  :root { --content-pad: 16px; }
+
+  /* sidebar becomes off-screen drawer */
+  .sidebar {
+    width: var(--sb-w) !important;
+    transform: translateX(-100%);
+  }
+  .sidebar.drawer-open { transform: translateX(0); }
+  .sidebar-overlay { display: block; pointer-events: none; }
+  .sidebar-overlay.show { pointer-events: all; }
+
+  /* main full width */
+  .main { margin-left: 0 !important; }
+
+  /* topbar adjustments */
+  .topbar { padding: 0 16px; gap: 10px; }
+  .topbar-title { font-size: 18px; }
+  .search-row { max-width: none; flex: 1; }
+  .user-info { display: none; }
+  .topbar-chevron { display: none; }
+
+  /* hero */
+  .hero-title { font-size: 28px; }
+  .poster { width: 110px; height: 144px; }
+  .hero-inner { gap: 16px; padding-bottom: 24px; }
+  .hero-badges { gap: 12px; }
+  .hero-desc { font-size: 13px; }
+  .btn-offer { padding: 0 18px; height: 44px; font-size: 13.5px; }
+  .icon-act-btn { width: 44px; height: 44px; }
+
+  /* content body: single column, hide right panel */
+  .content-body { grid-template-columns: 1fr; }
+  .body-right { display: none; }
+
+  /* sections */
+  .cast-grid { grid-template-columns: repeat(2, 1fr); }
+  .photos-grid { grid-template-columns: repeat(2, 1fr); }
+  .photo-cell img { height: 110px; }
+  .video-thumb img { height: 200px; }
+
+  /* meta strip wraps */
+  .meta-strip-inner { gap: 12px 0; }
+  .meta-col { min-width: 120px; flex: 0 0 50%; padding: 4px 12px; }
+  .meta-col:nth-child(odd) { padding-left: 0; border-right: 1px solid var(--border); }
+  .meta-col:nth-child(even) { border-right: none; }
+  .meta-col:nth-child(3), .meta-col:nth-child(4) { border-top: 1px solid var(--border); padding-top: 12px; }
+
+  /* carousel */
+  .listing-card { width: 150px; }
+  .card-img-wrap img { width: 150px; height: 195px; }
+
+  /* show bottom CTA bar */
+  .mobile-cta-bar { display: flex; }
+  /* pad content so bottom bar doesn't overlap */
+  .more-section { padding-bottom: 80px; }
+}
+
+/* ── 480px mobile ─────────────────────────── */
+@media (max-width: 480px) {
+  :root { --content-pad: 14px; }
+  .topbar-title { font-size: 16px; }
+  .search-row { display: none; }
+  .hero-title { font-size: 24px; }
+  .hero-type { font-size: 11px; }
+  .hero-desc { display: none; }
+  .hero-badges { gap: 10px; }
+  .affinity-num { font-size: 18px; }
+  .btn-offer { font-size: 13px; padding: 0 16px; height: 42px; }
+  .cast-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .cast-item { padding: 8px 10px; }
+  .photos-grid { grid-template-columns: repeat(2, 1fr); }
+  .photo-cell img { height: 100px; }
+  .meta-col { flex: 0 0 50%; }
+  .section-title { font-size: 15px; }
+  .listing-card { width: 140px; }
+  .card-img-wrap img { width: 140px; height: 182px; }
+}
+
+/* ── 375px mobile small ───────────────────── */
+@media (max-width: 375px) {
+  .hero-title { font-size: 21px; }
+  .poster { width: 90px; height: 118px; }
+  .cast-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .cast-name { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- overlay for mobile drawer -->
+<div class="sidebar-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+<!-- ─── SIDEBAR ──────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <span class="logo-text">LOGO</span>
+    <div class="hamburger-btn" id="hamBtn" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item" data-label="Home" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item active" data-label="Discover" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span class="nav-label">Discover</span>
+      <svg class="nav-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="nav-item" data-label="Dashboard" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item" data-label="Negotiations" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span class="nav-label">Negotiations</span>
+    </div>
+
+    <div class="nav-section">Market</div>
+    <div class="nav-item" data-label="Content Market Live" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="2 12 7 12 10 18 14 6 17 12 22 12"/></svg>
+      <span class="nav-label">Content Market Live</span>
+    </div>
+    <div class="nav-item" data-label="Screening Rooms" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <span class="nav-label">Screening Rooms</span>
+    </div>
+    <div class="nav-item" data-label="Messaging Center" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15H3V5a2 2 0 012-2h14a2 2 0 012 2zm0 0v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/></svg>
+      <span class="nav-label">Messaging Center</span>
+    </div>
+
+    <div class="nav-section">Support</div>
+    <div class="nav-item" data-label="Site News" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="nav-label">Site News</span>
+    </div>
+    <div class="nav-item" data-label="FAQ" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span class="nav-label">FAQ</span>
+    </div>
+    <div class="nav-item" data-label="Contact Us" onclick="setNav(this)">
+      <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.11 1.18 2 2 0 012.1 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+      <span class="nav-label">Contact Us</span>
+    </div>
+  </nav>
+</aside>
+
+<!-- ─── MAIN ──────────────────────────────────── -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <span class="topbar-title">Listings</span>
+    <div class="topbar-help">?</div>
+    <div class="search-row">
+      <input class="search-input" type="text" placeholder="Search by listing title(s), seller/buyer organization…">
+      <button class="search-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+    </div>
+    <div class="topbar-right">
+      <div class="user-avatar">AJ</div>
+      <div class="user-info">
+        <span class="user-name">Alex Johnson</span>
+        <span class="user-role-badge">BUYER</span>
+      </div>
+      <svg class="topbar-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="icon-chip" style="position:relative">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="notif-dot">3</span>
+      </div>
+      <div class="icon-chip">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-grad"></div>
+      <div class="back-row">
+        <div class="back-btn">
+          <span class="back-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 8 12 12 16"/><line x1="16" y1="12" x2="8" y2="12"/></svg></span>
+          Back
+        </div>
+      </div>
+      <div class="hero-inner">
+        <div class="poster-wrap">
+          <img class="poster" src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=400&q=85" alt="The Ghan poster">
+
+        </div>
+        <div class="hero-info">
+          <h1 class="hero-title">The Ghan</h1>
+          <div class="hero-type">TV SHOW <span class="hero-type-dot">·</span> 2020</div>
+          <p class="hero-desc">Australia's Greatest Train Journey: The Full Journey takes you on a passenger train ride travelling from Adelaide to Darwin. It's a very long 2997 kilometers…<span class="read-more">Read More</span></p>
+          <div class="hero-tags">
+            <span class="tag">Adventure</span>
+            <span class="tag">Travel</span>
+            <span class="tag">Documentary</span>
+            <span class="tag">Special</span>
+          </div>
+          <div class="hero-badges">
+            <span class="hd-badge">HD</span>
+            <span class="runtime-b">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              3h 25m
+            </span>
+            <span class="imdb-g">
+              <span class="imdb-pill">IMDB</span>
+              <span class="imdb-star">★</span>
+              <span>7.6</span>
+            </span>
+            <div class="affinity-g">
+              <span class="affinity-lbl">AFFINITY<br>SCORE</span>
+              <span class="affinity-num">20</span>
+            </div>
+            <div class="top10-badge">
+              <span class="top10-top">TOP</span>
+              <span class="top10-num">10</span>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn-offer rh" onclick="openOfferModal(event,this)">
+              Make Offer / Proposal
+              <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <div class="tt-wrap">
+              <button class="icon-act-btn rh" id="wlBtn" onclick="toggleWL(this);rpl(event,this)" aria-label="Add to a watchlist">
+                <svg id="wlIc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <div class="tt">Add to a watchlist</div>
+            </div>
+            <div class="tt-wrap">
+              <button class="icon-act-btn rh" onclick="rpl(event,this)" aria-label="Add to bundle cart and make offer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+              </button>
+              <div class="tt">Add to bundle cart &amp; make offer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- METADATA: full width, outside the 2-col grid -->
+    <div class="meta-strip fi">
+      <div class="meta-strip-inner">
+        <div class="meta-col">
+          <div class="meta-col-lbl">Production Status</div>
+          <div class="meta-col-val">Completed, Released</div>
+        </div>
+        <div class="meta-col">
+          <div class="meta-col-lbl">Year of Production</div>
+          <div class="meta-col-val">2020</div>
+        </div>
+        <div class="meta-col">
+          <div class="meta-col-lbl">Year of Release</div>
+          <div class="meta-col-val">2020</div>
+        </div>
+        <div class="meta-col">
+          <div class="meta-col-lbl">Production company</div>
+          <div class="meta-col-val">Anthem Productions<br>Paul Schiff Productions</div>
+        </div>
+        <div class="meta-col">
+          <div class="meta-col-lbl">Country(ies) of Origin</div>
+          <div class="meta-col-val">USA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CONTENT BODY GRID ─────────────────── -->
+    <div class="content-body">
+
+      <!-- LEFT: all sections in order -->
+      <div class="body-left">
+
+        <div class="sections-wrap">
+
+          <!-- 2. VIDEOS -->
+          <div class="section fi">
+            <div class="section-title">Videos</div>
+            <div class="video-thumb" onclick="alert('Playing trailer…')">
+              <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=900&q=80" alt="Trailer">
+              <div class="video-overlay">
+                <div class="play-row">
+                  <div class="play-circle">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#1D4ED8" style="margin-left:2px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  </div>
+                  <span class="video-lbl">Trailer 2:43</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. PHOTOS -->
+          <div class="section fi">
+            <div class="section-title">Photos</div>
+            <div class="photos-grid">
+              <div class="photo-cell"><img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&q=80" alt="Train photo"></div>
+              <div class="photo-cell"><img src="https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=500&q=80" alt="Gorge landscape"></div>
+              <div class="photo-cell"><img src="https://images.unsplash.com/photo-1529108190281-9a4f620bc2d8?w=500&q=80" alt="Red centre"></div>
+            </div>
+          </div>
+
+          <!-- 4. CAST -->
+          <div class="section fi">
+            <div class="section-title">Cast</div>
+            <div class="cast-grid">
+              <div class="cast-item">
+                <img class="cast-av" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80" alt="Aaron Eckhart">
+                <span class="cast-name">Aaron Eckhart</span>
+              </div>
+              <div class="cast-item">
+                <div class="cast-init" style="background:#EDE9FE;color:#6D28D9">RT</div>
+                <span class="cast-name">Robin Tunney</span>
+              </div>
+              <div class="cast-item">
+                <div class="cast-init" style="background:#CFFAFE;color:#0E7490">FW</div>
+                <span class="cast-name">Finn Wittrock</span>
+              </div>
+              <div class="cast-item">
+                <div class="cast-init" style="background:#CFFAFE;color:#0E7490">SB</div>
+                <span class="cast-name">Sarah Bolger</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. CREW -->
+          <div class="section fi">
+            <div class="section-title">Crew</div>
+            <div class="crew-row"><span class="crew-role">Directors</span><span class="crew-name">Angelo Pizzo</span></div>
+            <div class="crew-row"><span class="crew-role">Producers</span><span class="crew-name">Angelo Pizzo</span></div>
+            <div class="crew-row"><span class="crew-role">Writers</span><span class="crew-name">Angelo Pizzo, Jim Dent</span></div>
+          </div>
+
+          <!-- SELLER -->
+          <div class="seller-card fi">
+            <div class="seller-av">AP</div>
+            <div class="seller-info">
+              <div class="seller-by">Sold by</div>
+              <div class="seller-name">A Pictures Intl Distribution LLC</div>
+            </div>
+            <div class="seller-icons">
+              <div class="tt-wrap">
+                <div class="seller-ico">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div class="tt">Seller info</div>
+              </div>
+              <div class="tt-wrap">
+                <div class="seller-ico">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                </div>
+                <div class="tt">Seller history</div>
+              </div>
+            </div>
+            <button class="btn-offer rh" style="height:40px;font-size:13px;padding:0 20px" onclick="openOfferModal(event,this)">
+              Make Offer / Proposal
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="desc-block fi">
+            <div class="section-title">Description</div>
+            <p>'The Ghan' is an innovative three-hour documentary that takes the viewer on an immersive, visually stunning journey on Australia's most iconic passenger train.</p>
+            <p>In Australia's first 'Slow TV' documentary, 'The Ghan' doesn't just travel through the heart of Australia, from Adelaide to Darwin, 'The Ghan' explores the part it played in the foundation of modern multicultural Australia.</p>
+            <p>Using graphics and archival imagery, 'The Ghan' reveals the story of how the construction of the transcontinental Ghan line, the subsequent development of central Australia and the growth of Port Augusta, Alice Springs and Darwin are due to the contributions of local Aboriginal surveyors and early immigrants — European navvies, Afghan cameleers and Chinese coolies.</p>
+          </div>
+
+        </div><!-- /sections-wrap -->
+
+        <!-- MORE LIKE THIS (inside body-left) -->
+        <div class="more-section fi">
+          <div class="more-header">
+            <span class="section-title" style="margin:0">More Like This</span>
+            <div class="car-nav">
+              <button class="car-btn" id="cPrev" onclick="carMove(-1)" disabled>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button class="car-btn" id="cNext" onclick="carMove(1)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="car-viewport">
+            <div class="car-track" id="cTrack">
+
+              <div class="listing-card">
+                <div class="card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80" alt="Pammi Aunty">
+                  <div class="card-hover-btns">
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="card-tt">Watchlist</div></div>
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></button><div class="card-tt">Add to cart</div></div>
+                  </div>
+                </div>
+                <div class="card-title">Pammi Aunty</div>
+                <div class="card-year">2017 · 1h 30m</div>
+                <div class="card-tags"><span class="card-tag">Adventure</span><span class="card-tag">Comedy</span></div>
+              </div>
+
+              <div class="listing-card">
+                <div class="card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&q=80" alt="Running Man">
+                  <div class="card-hover-btns">
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="card-tt">Watchlist</div></div>
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></button><div class="card-tt">Add to cart</div></div>
+                  </div>
+                </div>
+                <div class="card-title">Running Man</div>
+                <div class="card-year">2017 · 1h 30m</div>
+                <div class="card-tags"><span class="card-tag">Adventure</span><span class="card-tag">Action</span></div>
+              </div>
+
+              <div class="listing-card">
+                <div class="card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&q=80" alt="Sherazade">
+                  <div class="card-hover-btns">
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="card-tt">Watchlist</div></div>
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></button><div class="card-tt">Add to cart</div></div>
+                  </div>
+                </div>
+                <div class="card-title">Sherazade</div>
+                <div class="card-year">2017 · 1h 30m</div>
+                <div class="card-tags"><span class="card-tag">Adventure</span><span class="card-tag">Kids</span></div>
+              </div>
+
+              <div class="listing-card">
+                <div class="card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80" alt="The Last Fish Hunter">
+                  <div class="card-hover-btns">
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="card-tt">Watchlist</div></div>
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></button><div class="card-tt">Add to cart</div></div>
+                  </div>
+                </div>
+                <div class="card-title">The Last Fish Hunter</div>
+                <div class="card-year">2017 · 1h 30m</div>
+                <div class="card-tags"><span class="card-tag">Drama</span><span class="card-tag">Action</span></div>
+              </div>
+
+              <div class="listing-card">
+                <div class="card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1493514789931-586cb221d7a7?w=400&q=80" alt="Wild Frontiers">
+                  <div class="card-hover-btns">
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="card-tt">Watchlist</div></div>
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></button><div class="card-tt">Add to cart</div></div>
+                  </div>
+                </div>
+                <div class="card-title">Wild Frontiers</div>
+                <div class="card-year">2019 · 2h 10m</div>
+                <div class="card-tags"><span class="card-tag">Documentary</span></div>
+              </div>
+
+              <div class="listing-card">
+                <div class="card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&q=80" alt="Earth Stories">
+                  <div class="card-hover-btns">
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="card-tt">Watchlist</div></div>
+                    <div class="card-tt-wrap"><button class="card-hbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></button><div class="card-tt">Add to cart</div></div>
+                  </div>
+                </div>
+                <div class="card-title">Earth Stories</div>
+                <div class="card-year">2018 · 1h 45m</div>
+                <div class="card-tags"><span class="card-tag">Travel</span><span class="card-tag">Nature</span></div>
+              </div>
+
+            </div>
+          </div>
+        </div><!-- /more-section -->
+
+      </div><!-- /body-left -->
+
+      <!-- RIGHT: sticky purchase panel -->
+      <div class="body-right">
+        <div class="panel-inner">
+
+          <!-- header with blurred bg -->
+          <div class="panel-header">
+            <div class="panel-header-bg"></div>
+            <div class="panel-header-content">
+              <img class="panel-thumb" src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=200&q=85" alt="The Ghan">
+              <div class="panel-title-block">
+                <div class="panel-title">The Ghan</div>
+                <div class="panel-subtitle">TV Show &nbsp;·&nbsp; 2020</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- tags -->
+          <div class="panel-tags">
+            <span class="panel-tag">Adventure</span>
+            <span class="panel-tag">Travel</span>
+            <span class="panel-tag">Documentary</span>
+            <span class="panel-tag">Special</span>
+          </div>
+
+          <!-- stats -->
+          <div class="panel-stats">
+            <div class="p-stat">
+              <div class="p-stat-lbl">IMDB</div>
+              <div class="p-stat-val"><span class="pstar">★</span>7.6</div>
+            </div>
+            <div class="p-stat">
+              <div class="p-stat-lbl">Runtime</div>
+              <div class="p-stat-val">3h 25m</div>
+            </div>
+            <div class="p-stat">
+              <div class="p-stat-lbl">Affinity</div>
+              <div class="p-stat-val">20</div>
+            </div>
+            <div class="p-stat">
+              <div class="p-stat-lbl">Format</div>
+              <div class="p-stat-val" style="font-size:11px;letter-spacing:.04em">HD</div>
+            </div>
+          </div>
+
+          <!-- primary CTA -->
+          <button class="panel-cta-primary rh" onclick="openOfferModal(event,this)">
+            Make Offer / Proposal
+            <svg class="parrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- secondary CTAs -->
+          <div class="panel-cta-row">
+            <button class="panel-cta-sec rh" id="panelWlBtn" onclick="panelToggleWL(this);rpl(event,this)">
+              <svg id="panelWlIc" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Watchlist
+            </button>
+            <button class="panel-cta-sec rh" onclick="rpl(event,this)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+              Bundle cart
+            </button>
+          </div>
+
+          <!-- seller -->
+          <div class="panel-divider"></div>
+          <div class="panel-seller">
+            <div class="panel-seller-av">AP</div>
+            <div>
+              <div class="panel-seller-by">Sold by</div>
+              <div class="panel-seller-name">A Pictures Intl Distribution LLC</div>
+            </div>
+          </div>
+
+        </div><!-- /panel-inner -->
+      </div><!-- /body-right -->
+
+    </div><!-- /content-body -->
+  </div><!-- /content -->
+
+</div><!-- /main -->
+
+<!-- mobile bottom CTA bar -->
+<div class="mobile-cta-bar">
+  <button class="btn-offer rh" onclick="openOfferModal(event,this)" style="flex:1;justify-content:center">
+    Make Offer / Proposal
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+  <div class="tt-wrap">
+    <button class="icon-act-btn rh" style="background:rgba(37,99,235,0.15);border-color:rgba(37,99,235,0.3);color:var(--blue)" onclick="rpl(event,this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="tt">Add to watchlist</div>
+  </div>
+</div>
+
+<!-- ─── OFFER MODAL ──────────────────────────── -->
+<div class="offer-backdrop" id="offerBackdrop" onclick="closeOfferModal(event)">
+  <div class="offer-modal" role="dialog" aria-modal="true" aria-labelledby="omTitle">
+
+    <!-- header -->
+    <div class="om-head">
+      <img class="om-thumb" src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=200&q=85" alt="The Ghan">
+      <div class="om-head-info">
+        <div class="om-head-question" id="omTitle">How would you like to proceed?</div>
+        <div class="om-head-meta">The Ghan &nbsp;·&nbsp; TV Show &nbsp;·&nbsp; 2020</div>
+      </div>
+      <button class="om-close" onclick="offerBackdrop.classList.remove('open');document.body.style.overflow=''" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- options -->
+    <div class="om-options">
+
+      <!-- 1. Make Offer -->
+      <div class="om-option" onclick="handleOffer(event,'offer')">
+        <div class="om-opt-icon" style="background:#EFF6FF">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div class="om-opt-body">
+          <div class="om-opt-title">Make Offer</div>
+          <div class="om-opt-desc">Submit a direct financial offer to the seller. They will accept, decline, or counter.</div>
+        </div>
+        <div class="om-opt-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+      <!-- 2. Request Proposal -->
+      <div class="om-option" onclick="handleOffer(event,'proposal')">
+        <div class="om-opt-icon" style="background:#F5F3FF">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="om-opt-body">
+          <div class="om-opt-title">Request Proposal</div>
+          <div class="om-opt-desc">Ask the seller to prepare a formal proposal with licensing terms and pricing.</div>
+        </div>
+        <div class="om-opt-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+      <!-- 3. Add to Bundle Cart -->
+      <div class="om-option" onclick="handleOffer(event,'bundle')">
+        <div class="om-opt-icon" style="background:#F0FDF4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/><line x1="16" y1="10" x2="16" y2="14"/><line x1="14" y1="12" x2="18" y2="12"/></svg>
+        </div>
+        <div class="om-opt-body">
+          <div class="om-opt-title">Add to Bundle Cart</div>
+          <div class="om-opt-desc">Group this title with others and negotiate a bundle deal for multiple licences.</div>
+        </div>
+        <div class="om-opt-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+    </div><!-- /om-options -->
+
+    <!-- footer note -->
+    <div class="om-foot">
+      <svg class="om-foot-ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span class="om-foot-text">All actions are subject to seller review. No commitment is made until an agreement is signed.</span>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ── NAV ─────────────────────────────────────────
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── SIDEBAR TOGGLE ───────────────────────────────
+const appEl    = document.getElementById('app');
+const sidebar  = document.getElementById('sidebar');
+const hamBtn   = document.getElementById('hamBtn');
+const overlay  = document.getElementById('sbOverlay');
+const mq768    = window.matchMedia('(max-width: 768px)');
+
+function toggleSidebar() {
+  if (mq768.matches) {
+    // mobile: drawer mode
+    const open = sidebar.classList.toggle('drawer-open');
+    overlay.classList.toggle('show', open);
+    hamBtn.classList.toggle('is-open', open);
+  } else {
+    // desktop: collapse rail
+    appEl.classList.toggle('nav-collapsed');
+    hamBtn.classList.toggle('is-open', appEl.classList.contains('nav-collapsed'));
+    setTimeout(() => carMove(0), 280);
+  }
+}
+function closeSidebar() {
+  sidebar.classList.remove('drawer-open');
+  overlay.classList.remove('show');
+  hamBtn.classList.remove('is-open');
+}
+
+// ── OFFER MODAL ──────────────────────────────────
+const offerBackdrop = document.getElementById('offerBackdrop');
+
+function openOfferModal(e, btn) {
+  if (btn) rpl(e, btn);          // ripple on the button first
+  requestAnimationFrame(() => {
+    offerBackdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+}
+
+function closeOfferModal(e) {
+  // called directly from close button (no event arg) or backdrop click
+  if (e && e.type === 'click' && e.target !== offerBackdrop) return;
+  offerBackdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOffer(e, type) {
+  const labels = {
+    offer:    'Make Offer',
+    proposal: 'Request Proposal',
+    bundle:   'Add to Bundle Cart'
+  };
+  const options = document.querySelectorAll('.om-option');
+  options.forEach(opt => opt.style.opacity = '0.35');
+  e.currentTarget.style.opacity = '1';
+  e.currentTarget.style.background = '#EFF6FF';
+
+  setTimeout(() => {
+    offerBackdrop.classList.remove('open');
+    document.body.style.overflow = '';
+    options.forEach(opt => { opt.style.opacity = ''; opt.style.background = ''; });
+    alert(`"${labels[type]}" selected for The Ghan.\n\nIn a live app this would open the ${labels[type].toLowerCase()} flow.`);
+  }, 320);
+}
+
+// close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && offerBackdrop.classList.contains('open')) {
+    offerBackdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+});
+
+// ── RIPPLE ───────────────────────────────────────
+function rpl(e, el) {
+  const r = el.getBoundingClientRect();
+  const sz = Math.max(r.width, r.height);
+  const x = e.clientX - r.left - sz/2, y = e.clientY - r.top - sz/2;
+  const s = document.createElement('span');
+  s.className = 're';
+  s.style.cssText = `width:${sz}px;height:${sz}px;left:${x}px;top:${y}px`;
+  el.appendChild(s);
+  setTimeout(() => s.remove(), 550);
+}
+
+// ── HERO WATCHLIST ───────────────────────────────
+let wled = false;
+function toggleWL(btn) {
+  wled = !wled;
+  if (wled) {
+    btn.style.cssText = 'background:rgba(37,99,235,0.65);border-color:rgba(37,99,235,0.9)';
+    btn.querySelector('svg').outerHTML = `<svg id="wlIc" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`;
+  } else {
+    btn.style.cssText = '';
+    btn.querySelector('svg').outerHTML = `<svg id="wlIc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  }
+}
+
+// ── PANEL WATCHLIST ──────────────────────────────
+let pwled = false;
+function panelToggleWL(btn) {
+  pwled = !pwled;
+  if (pwled) {
+    btn.style.cssText = 'border-color:var(--blue);color:var(--blue);background:#EFF6FF;flex:1;height:38px;border-radius:8px;border:1.5px solid;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:border-color 0.15s,color 0.15s,background 0.15s,transform 0.12s';
+    document.getElementById('panelWlIc').outerHTML = `<svg id="panelWlIc" width="13" height="13" viewBox="0 0 24 24" fill="var(--blue)" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`;
+  } else {
+    btn.style.cssText = '';
+    document.getElementById('panelWlIc').outerHTML = `<svg id="panelWlIc" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  }
+}
+
+// ── CAROUSEL ─────────────────────────────────────
+const CW = 165 + 14; // card + gap
+let cPos = 0;
+const TOTAL_CARDS = 6;
+
+function carMove(dir) {
+  const vp = document.querySelector('.car-viewport').offsetWidth;
+  const vis = Math.max(1, Math.floor((vp + 14) / CW));
+  const maxShift = Math.max(0, (TOTAL_CARDS - vis) * CW);
+  cPos = Math.max(0, Math.min(maxShift, cPos + dir * CW * 2));
+  document.getElementById('cTrack').style.transform = `translateX(-${cPos}px)`;
+  document.getElementById('cPrev').disabled = cPos === 0;
+  document.getElementById('cNext').disabled = cPos >= maxShift;
+}
+
+// ── SCROLL FADE-IN ────────────────────────────────
+const ioObs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('vis'), i * 50);
+      ioObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.07 });
+document.querySelectorAll('.fi').forEach(el => ioObs.observe(el));
+
+// ── INIT ──────────────────────────────────────────
+window.addEventListener('load', () => {
+  // stagger meta cols
+  document.querySelectorAll('.meta-col').forEach((c, i) => {
+    c.style.cssText = 'opacity:0;transform:translateY(10px);transition:opacity 0.4s ease,transform 0.4s ease';
+    setTimeout(() => { c.style.opacity = '1'; c.style.transform = 'none'; }, 300 + i * 80);
+  });
+  carMove(0);
+});
+
+// re-calc carousel on resize
+window.addEventListener('resize', () => { cPos = 0; carMove(0); });
+</script>
+</body>
+</html>
